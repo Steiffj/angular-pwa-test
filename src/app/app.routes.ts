@@ -1,11 +1,10 @@
 import { Routes } from '@angular/router';
 import { HomeComponent } from './home/home.component';
-import { PokemonListComponent } from './pokemon-list/pokemon-list.component';
 import { StorageMetricsComponent } from './storage-metrics/storage-metrics.component';
 import { TablePopoutShellComponent } from './table-popout-shell/table-popout-shell.component';
 
 export const routes: Routes = [
-  { path: '', redirectTo: 'home' },
+  { path: '', pathMatch: 'full', redirectTo: 'home' },
   {
     path: 'home',
     title: 'Home',
@@ -21,8 +20,11 @@ export const routes: Routes = [
       },
       {
         path: 'table',
-        title: 'Data Explorer',
-        component: PokemonListComponent,
+        title: 'Table',
+        loadComponent: () =>
+          import('./pokemon-list/pokemon-list.component').then(
+            (m) => m.PokemonListComponent
+          ),
       },
       {
         path: 'metrics',
@@ -33,7 +35,11 @@ export const routes: Routes = [
   },
   {
     path: 'table-standalone',
+    pathMatch: 'full',
     title: 'Table (Standalone)',
-    component: PokemonListComponent,
+    loadComponent: () =>
+      import('./pokemon-list/pokemon-list.component').then(
+        (m) => m.PokemonListComponent
+      ),
   },
 ];
