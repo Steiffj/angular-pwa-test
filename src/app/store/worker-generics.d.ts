@@ -11,6 +11,14 @@ type TypesIDB = DBSchema & {
     key: Key;
     value: Val;
   };
+} & {
+  metadata: {
+    key: Typ;
+    value: {
+      count: number;
+      timestamp: Date;
+    };
+  };
 };
 
 type ConfigIDB = DBSchema & {

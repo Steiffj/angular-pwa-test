@@ -24,6 +24,7 @@ export type LoadResult<T extends string> = {
   ok: boolean;
   stores: T[];
   succeeded: T[];
+  skipped: T[];
   failed: T[];
   messages: string[];
 };
@@ -141,7 +142,9 @@ async function init(
       console.log(`Upgrading ${db.name} from v${oldVersion} to v${newVersion}`);
       deleteExistingObjectStores(db);
 
-      console.debug(`Creating ${stores.length} object stores.`);
+      db.createObjectStore('metadata');
+
+      console.debug(`Creating ${stores.length} type object stores.`);
       for (const store of stores) {
         try {
           db.createObjectStore(store);
@@ -195,6 +198,7 @@ async function loadByType(
     ok: false,
     stores: [],
     succeeded: [],
+    skipped: [],
     failed: [],
     messages: [],
   };
@@ -245,6 +249,32 @@ async function loadByType(
 
         // Load list of Pokemon
         try {
+          // Check if we really need to load this data
+          const tx = db.transaction('metadata', 'readonly');
+          const metadata = await tx.store.get(type.name);
+          let load = false;
+          if (metadata && metadata.count > 0) {
+            const staleMs = 4 * 60 * 60 * 1000; // 4 hours
+            const now = new Date();
+            const diffMs = Math.abs(
+              now.getTime() - metadata.timestamp.getTime()
+            );
+            if (diffMs >= staleMs) {
+              load = true;
+            }
+          } else {
+            load = true;
+          }
+          await tx.done;
+
+          // Only load if the data is old or the store is empty
+          if (!load) {
+            console.log(`Skipping data load for type ${type.name}`);
+            result.stores.push(type.name);
+            result.skipped.push(type.name);
+            return;
+          }
+
           console.log(`Loading data for type ${type.name} from ${type.url}`);
           const res = await fetch(type.url);
           const data: { pokemon: { pokemon: Omit<Val, 'id'> }[] } =
@@ -297,15 +327,23 @@ async function loadByType(
 /**
  * Load of list of Pokemon of a single type to IDB.
  * @param db
- * @param store
+ * @param type
  * @param items
  * @returns
  */
-async function loadToIDB(db: IDB<TypesIDB>, store: Typ, items: Val[]) {
-  const tx = db.transaction(store, 'readwrite');
+async function loadToIDB(db: IDB<TypesIDB>, type: Typ, items: Val[]) {
+  const tx = db.transaction([type, 'metadata'], 'readwrite');
+
+  // Update metadata
+  console.debug(`Updating ${type} metadata`);
+  const metaStore = tx.objectStore('metadata');
+  await metaStore.put({ count: items.length, timestamp: new Date() }, type);
+
+  // Update list
+  console.debug(`Updating ${type} data`);
   const results = await Promise.allSettled([
     items.map((item) => {
-      tx.store.put(item, item.id);
+      tx.objectStore(type).put(item, item.id);
     }),
     tx.done,
   ]);
