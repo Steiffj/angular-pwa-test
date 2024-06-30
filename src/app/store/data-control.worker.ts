@@ -247,14 +247,14 @@ async function loadByType(
           return;
         }
 
-        // Load list of Pokemon
+        // Load list of Pokemon of a given type
         try {
           // Check if we really need to load this data
           const tx = db.transaction('metadata', 'readonly');
           const metadata = await tx.store.get(type.name);
           let load = false;
           if (metadata && metadata.count > 0) {
-            const staleMs = 4 * 60 * 60 * 1000; // 4 hours
+            const staleMs = 24 * 60 * 60 * 1000; // 24 hours
             const now = new Date();
             const diffMs = Math.abs(
               now.getTime() - metadata.timestamp.getTime()
