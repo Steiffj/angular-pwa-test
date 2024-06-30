@@ -1,13 +1,13 @@
 import { TestBed } from '@angular/core/testing';
 
-import { DataControlSwService } from './data-control-sw.service';
+import { DataSyncService } from './data-sync.service';
 
-describe('DataControlSwService', () => {
-  let service: DataControlSwService;
+describe('DataSyncService', () => {
+  let service: DataSyncService;
 
   beforeEach(() => {
     TestBed.configureTestingModule({});
-    service = TestBed.inject(DataControlSwService);
+    service = TestBed.inject(DataSyncService);
   });
 
   it('should be created', () => {
