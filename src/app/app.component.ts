@@ -1,11 +1,11 @@
 import { Component, OnInit, inject } from '@angular/core';
-import { RouterOutlet } from '@angular/router';
+import { RouterModule, RouterOutlet } from '@angular/router';
 import { DataSyncService } from './store/data-sync.service';
 
 @Component({
   selector: 'app-root',
   standalone: true,
-  imports: [RouterOutlet],
+  imports: [RouterOutlet, RouterModule],
   templateUrl: './app.component.html',
   styleUrl: './app.component.scss',
 })
@@ -20,6 +20,6 @@ export class AppComponent implements OnInit {
 
   async loadPokemon() {
     await this.dataSyncSvc.initWebWorker();
-    this.dataSyncSvc.loadPokemonByType();
+    // this.dataSyncSvc.loadPokemonByType();
   }
 }
