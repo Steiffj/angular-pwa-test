@@ -1,1 +1,40 @@
 /* You can add global styles to this file, and also import other style files */
+
+:root {
+    // --clr-shadow
+    --clr-text-subtle: #3E3D3F;
+    --clr-outline: #30363d;
+
+    --clr-primary-dark: #254D32;
+    --clr-primary: #3A7D44;
+    --clr-primary-light: #69B578;
+    --clr-primary-neutral: #D0DB97;
+    --clr-accent-light: #FAA916;
+    --clr-accent-dark: #96031A;
+}
+
+body.dark-theme {
+    --clr-bg: #181D27;
+    --clr-text: #FBFFFE;
+}
+
+body.light-theme {
+    --clr-bg:  #FBFFFE;;
+    --clr-text: #181D27;
+}
+
+body {
+    font-family: "Jost", sans-serif;
+    font-optical-sizing: auto;
+    background-color: var(--clr-bg);
+    color: var(--clr-text);
+
+    a {
+        color: var(--clr-text);
+        text-decoration: underline;
+    }
+
+    a:hover {
+        color: var(--clr-accent-light);
+    }
+}

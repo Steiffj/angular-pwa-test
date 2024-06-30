@@ -32,7 +32,8 @@
               }
             ],
             "styles": [
-              "src/styles.scss"
+              "src/styles.scss",
+              "src/reset.scss"
             ],
             "scripts": [],
             "webWorkerTsConfig": "tsconfig.worker.json"
@@ -93,7 +94,8 @@
               }
             ],
             "styles": [
-              "src/styles.scss"
+              "src/styles.scss",
+              "src/reset.scss"
             ],
             "scripts": [],
             "webWorkerTsConfig": "tsconfig.worker.json"
