@@ -24,6 +24,11 @@ export type WorkerCommand<T extends string> =
   | WorkerInit<T>
   | WorkerLoadByType<T>;
 
+/**
+ * Features/learning TODO
+ * - Learn how to use blocked/blocking events - should retry when unblocked.
+ * - Add idb error handling
+ */
 @Injectable({
   providedIn: 'root',
 })

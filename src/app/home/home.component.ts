@@ -30,7 +30,7 @@ export class HomeComponent implements OnInit {
 
   async loadPokemon() {
     await this.dataSyncSvc.initWebWorker();
-    // this.dataSyncSvc.loadPokemonByType();
+    this.dataSyncSvc.loadPokemonByType();
   }
 
   async establishUserSession() {

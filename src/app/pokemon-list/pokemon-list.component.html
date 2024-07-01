@@ -1,1 +1,18 @@
-<p>pokemon-list works!</p>
+<table>
+    <thead>
+        <tr>
+            <th scope="col">ID</th>
+            <th scope="col">Name</th>
+            <th scope="col">URL</th>
+        </tr>
+    </thead>
+    <tbody>
+        @for (poke of pokemon; track poke.id) {
+        <tr>
+            <td>{{poke.id}}</td>
+            <td style="font-weight: bold;">{{poke.name}}</td>
+            <td> <a href="{{poke.url}}" target="_blank">{{poke.url}}</a></td>
+        </tr>
+        }
+    </tbody>
+</table>
