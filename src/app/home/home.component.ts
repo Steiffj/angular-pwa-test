@@ -7,6 +7,7 @@ import {
 } from '@angular/router';
 import { openPwaWindow } from '../open-pwa-window';
 import { DataSyncService } from '../store/data-sync.service';
+import { UserSessionService } from '../user-session/user-session.service';
 
 @Component({
   selector: 'app-home',
@@ -19,15 +20,21 @@ export class HomeComponent implements OnInit {
   #router = inject(Router);
   #activatedRoute = inject(ActivatedRoute);
   readonly dataSyncSvc = inject(DataSyncService);
+  readonly userSessionSvc = inject(UserSessionService);
 
   ngOnInit() {
-    console.log('OnInit lifecycle hook - loading pokemon by type');
+    console.log('OnInit lifecycle hook');
+    this.startUserSession();
     this.loadPokemon();
   }
 
   async loadPokemon() {
     await this.dataSyncSvc.initWebWorker();
     // this.dataSyncSvc.loadPokemonByType();
+  }
+
+  async startUserSession() {
+    await this.userSessionSvc.initSharedUserSession();
   }
 
   openInNewWindow(route: string) {
