@@ -38,8 +38,8 @@ export const routes: Routes = [
     pathMatch: 'full',
     title: 'Table (Standalone)',
     loadComponent: () =>
-      import('./pokemon-list/pokemon-list.component').then(
-        (m) => m.PokemonListComponent
+      import('./table-window/table-window.component').then(
+        (m) => m.TableWindowComponent
       ),
   },
 ];

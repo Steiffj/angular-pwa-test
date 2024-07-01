@@ -24,7 +24,7 @@ export class HomeComponent implements OnInit {
 
   ngOnInit() {
     console.log('OnInit lifecycle hook');
-    this.startUserSession();
+    this.establishUserSession();
     this.loadPokemon();
   }
 
@@ -33,7 +33,7 @@ export class HomeComponent implements OnInit {
     // this.dataSyncSvc.loadPokemonByType();
   }
 
-  async startUserSession() {
+  async establishUserSession() {
     await this.userSessionSvc.initSharedUserSession();
   }
 

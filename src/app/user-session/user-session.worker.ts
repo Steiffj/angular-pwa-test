@@ -6,6 +6,7 @@ onconnect = (e) => {
   const port = e.ports[0];
   rxs.push(port);
   console.log(port);
+  console.log(`User session is tracking ${rxs.length} clients`);
 
   port.onmessage = (e) => {
     const msg = e.data;
