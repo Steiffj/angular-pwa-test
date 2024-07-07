@@ -1,12 +1,11 @@
-import { Messages } from './message-types';
 import { UnionToIntersection } from './union-to-intersection';
 
-type Worker<T> = T extends {
+type TWorker<T> = T extends {
   type: infer A;
   payload: infer B;
   response: infer C;
 }
-  ? {
+  ? Omit<Worker, 'onmessage' | 'postMessage'> & {
       postMessage: (
         data: { type: A; payload: B },
         options?: StructuredSerializeOptions
@@ -24,7 +23,7 @@ type Worker<T> = T extends {
  *
  * @see {@link WorkerOnmessage} and {@link WorkerPostMessage} for strongly typing the associated worker script.
  */
-export type TypedWorker<T> = UnionToIntersection<Worker<T>>;
+export type TypedWorker<T> = UnionToIntersection<TWorker<T>>;
 
 /**
  * Provides strong typing for `Worker.onmessage` within a web worker script.

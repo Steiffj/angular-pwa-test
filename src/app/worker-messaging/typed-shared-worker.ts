@@ -2,14 +2,12 @@
 
 import { UnionToIntersection } from './union-to-intersection';
 
-type SharedWorker<T> = T extends {
+type TSharedWorker<T> = T extends {
   type: infer A;
   payload: infer B;
   response: infer C;
 }
-  ? {
-      start: () => void;
-      close: () => void;
+  ? Omit<SharedWorker, 'port'> & {
       readonly port: Omit<MessagePort, 'postMessage' | 'onmessage'> & {
         postMessage: (
           data: { type: A; payload: B },
@@ -17,14 +15,13 @@ type SharedWorker<T> = T extends {
         ) => void;
         onmessage: (event: MessageEvent<{ type: A; response: C }>) => void;
       };
-      onerror: ((event: ErrorEvent) => any) | null;
     }
   : never;
 
 /**
  * Strongly typed shared worker interface.
  */
-export type TypedSharedWorker<T> = UnionToIntersection<SharedWorker<T>>;
+export type TypedSharedWorker<T> = UnionToIntersection<TSharedWorker<T>>;
 
 /**
  * Provides strong typing for `SharedWorker.onconnect` within a shared worker script.
