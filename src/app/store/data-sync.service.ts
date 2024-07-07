@@ -1,28 +1,30 @@
 import { Injectable } from '@angular/core';
-import { POKEMON_TYPE, PokemonType } from '../__typegen/types';
-import { TypedWebWorker } from './typed-web-worker';
 import { Subject, firstValueFrom } from 'rxjs';
+import { POKEMON_TYPE, PokemonType } from '../__typegen/types';
+import { MsgStruct } from '../worker-messaging/message-types';
+import { TypedWorker } from '../worker-messaging/typed-worker';
+import { DBInfo, LoadResult } from './data-control.worker';
 
-type WorkerInit<T> = {
-  command: 'init';
-  args: {
-    apiUrl: string;
-    dbName: string;
-    dbVersion: number;
-    types: T[];
-  };
-};
-type WorkerLoadByType<T> = {
-  command: 'load-by-type';
-  args: {
-    url: string;
-    throttleTimeMs: number;
-    types: T[];
-  };
-};
-export type WorkerCommand<T extends string> =
-  | WorkerInit<T>
-  | WorkerLoadByType<T>;
+export type DataSyncMsg<T extends string> =
+  | MsgStruct<
+      'init',
+      {
+        apiUrl: string;
+        dbName: string;
+        dbVersion: number;
+        types: T[];
+      },
+      DBInfo
+    >
+  | MsgStruct<
+      'load-by-type',
+      {
+        url: string;
+        throttleTimeMs: number;
+        types: T[];
+      },
+      LoadResult<T>
+    >;
 
 /**
  * Features/learning TODO
@@ -33,9 +35,7 @@ export type WorkerCommand<T extends string> =
   providedIn: 'root',
 })
 export class DataSyncService {
-  private worker:
-    | TypedWebWorker<WorkerCommand<PokemonType>, unknown>
-    | undefined;
+  private worker: TypedWorker<DataSyncMsg<PokemonType>> | undefined;
 
   constructor() {
     // this.initWebWorker();
@@ -63,32 +63,33 @@ export class DataSyncService {
     await this.requestPersistentStorage();
     const done$ = new Subject<void>();
 
-    if (typeof Worker !== 'undefined') {
+    try {
       this.worker = new Worker(
         new URL('./data-control.worker', import.meta.url)
-      ) as TypedWebWorker<WorkerCommand<PokemonType>, unknown>;
-
-      const listener: (typeof this.worker)['onmessage'] = ({ data }) => {
-        console.log(data);
-        done$.next();
-      };
-      this.worker.onmessage = listener;
-      this.worker.postMessage({
-        command: 'init',
-        args: {
-          apiUrl: 'https://pokeapi.co/api/v2/',
-          dbName: 'poke',
-          dbVersion: 1,
-          types: [...POKEMON_TYPE],
-        },
-      });
-
-      await firstValueFrom(done$);
-      this.worker.removeEventListener('message', listener);
-    } else {
-      // Web Workers are not supported in this environment.
-      // TODO add fallback
+      ) as TypedWorker<DataSyncMsg<PokemonType>>;
+      console.log(import.meta.url);
+    } catch {
+      console.error('Web workers not available');
+      return;
     }
+
+    const listener: (typeof this.worker)['onmessage'] = ({ data }) => {
+      console.log(data);
+      done$.next();
+    };
+    this.worker.onmessage = listener;
+    this.worker.postMessage({
+      type: 'init',
+      payload: {
+        apiUrl: 'https://pokeapi.co/api/v2/',
+        dbName: 'poke',
+        dbVersion: 1,
+        types: [...POKEMON_TYPE],
+      },
+    });
+
+    await firstValueFrom(done$);
+    this.worker.removeEventListener('message', listener);
   }
 
   loadPokemonByType() {
@@ -99,8 +100,8 @@ export class DataSyncService {
     const typeListUrl = new URL('type', 'https://pokeapi.co/api/v2/');
     typeListUrl.searchParams.set('limit', '100');
     this.worker.postMessage({
-      command: 'load-by-type',
-      args: {
+      type: 'load-by-type',
+      payload: {
         url: typeListUrl.toString(),
         throttleTimeMs: 5 * 1000,
         types: [...POKEMON_TYPE],

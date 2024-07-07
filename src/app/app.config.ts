@@ -1,12 +1,12 @@
 import {
   ApplicationConfig,
-  provideZoneChangeDetection,
   isDevMode,
+  provideZoneChangeDetection,
 } from '@angular/core';
 import { provideRouter } from '@angular/router';
 
-import { routes } from './app.routes';
 import { provideServiceWorker } from '@angular/service-worker';
+import { routes } from './app.routes';
 
 export const appConfig: ApplicationConfig = {
   providers: [

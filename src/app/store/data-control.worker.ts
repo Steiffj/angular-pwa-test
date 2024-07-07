@@ -9,7 +9,12 @@ import {
   takeUntil,
   tap,
 } from 'rxjs';
-import { WorkerCommand } from './data-sync.service';
+import { PokemonType } from '../__typegen/types';
+import {
+  WorkerOnmessage,
+  WorkerPostMessage,
+} from '../worker-messaging/typed-worker';
+import { DataSyncMsg } from './data-sync.service';
 import type {
   ConfigIDB,
   IDB,
@@ -28,7 +33,7 @@ export type LoadResult<T extends string> = {
   messages: string[];
 };
 
-type DBInfo = {
+export type DBInfo = {
   config: { name: string; version: number };
   types: { name: string; version: number };
   pokemon: { name: string; version: number };
@@ -36,62 +41,70 @@ type DBInfo = {
 
 let dbInfo: DBInfo;
 
-addEventListener(
-  'message',
-  async ({ data: msg }: MessageEvent<WorkerCommand<Typ>>) => {
-    try {
-      switch (msg.command) {
-        case 'init':
-          try {
-            dbInfo = await init(
-              msg.args.apiUrl,
-              msg.args.dbName,
-              msg.args.dbVersion,
-              msg.args.types
-            );
-            postMessage({
+declare let onmessage: WorkerOnmessage<DataSyncMsg<PokemonType>>;
+declare const postMessage: WorkerPostMessage<DataSyncMsg<PokemonType>>;
+onmessage = async ({ data: msg }) => {
+  try {
+    switch (msg.type) {
+      case 'init':
+        try {
+          dbInfo = await init(
+            msg.payload.apiUrl,
+            msg.payload.dbName,
+            msg.payload.dbVersion,
+            msg.payload.types
+          );
+          postMessage({
+            type: msg.type,
+            response: {
               status: 'OK',
-              message: `Initialized IDB ${msg.args.dbName} v${msg.args.dbVersion}.`,
-            });
-            postMessage(dbInfo);
-          } catch (error) {
-            postMessage({
-              status: 'ERR',
-              message: 'Failed to initialize IDB',
-              error,
-            });
-          }
-          break;
-        case 'load-by-type':
-          if (!dbInfo) {
-            console.warn('DB info is not initialized. Not loading data');
-            return;
-          } else {
-            console.log('Starting load by type');
-          }
-          const db = await openDB<TypesIDB>(
-            dbInfo.types.name,
-            dbInfo.types.version
-          );
-          const info = await loadByType(
-            db,
-            msg.args.url,
-            msg.args.types,
-            msg.args.throttleTimeMs
-          );
-          postMessage(info);
-          break;
-        default:
-          const _exhaustiveCheck: never = msg;
-          return _exhaustiveCheck;
-      }
-    } catch (error) {
-      console.error('Unhandled exception in worker.');
-      console.error(error);
-      postMessage(error);
+              value: dbInfo,
+            },
+          });
+        } catch (error) {
+          postMessage({
+            type: msg.type,
+            response: {
+              status: 'ERROR',
+              errors: ['Failed to initialize IDB'],
+            },
+          });
+        }
+        break;
+      case 'load-by-type':
+        if (!dbInfo) {
+          console.warn('DB info is not initialized. Not loading data');
+          return;
+        } else {
+          console.log('Starting load by type');
+        }
+        const db = await openDB<TypesIDB>(
+          dbInfo.types.name,
+          dbInfo.types.version
+        );
+        const info = await loadByType(
+          db,
+          msg.payload.url,
+          msg.payload.types,
+          msg.payload.throttleTimeMs
+        );
+        postMessage({
+          type: msg.type,
+          response: {
+            status: 'OK',
+            value: info,
+          },
+        });
+        break;
+      default:
+        const _exhaustiveCheck: never = msg;
+        return _exhaustiveCheck;
     }
+  } catch (error) {
+    console.error('Unhandled exception in worker.');
+    console.error(error);
   }
-);
+};
 
 async function deleteExistingObjectStores<T extends DBSchema>(db: IDB<T>) {
   const result: {
