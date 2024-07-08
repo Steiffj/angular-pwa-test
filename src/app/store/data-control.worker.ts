@@ -281,7 +281,6 @@ async function loadByType(
 
           // Only load if the data is old or the store is empty
           if (!load) {
-            console.log(`Skipping data load for type ${type.name}`);
             result.stores.push(type.name);
             result.skipped.push(type.name);
             return;

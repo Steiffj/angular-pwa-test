@@ -24,7 +24,7 @@ export class TableWindowComponent implements OnInit {
   }
 
   async getSomePokemon() {
-    const list = await this.userSessionSvc.getPokemonList();
+    const list = await this.userSessionSvc.getPokemonList('fairy');
     this.pokemon.set(list);
   }
 }
