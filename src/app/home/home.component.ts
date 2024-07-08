@@ -1,4 +1,9 @@
-import { Component, OnInit, inject } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  OnInit,
+  inject,
+} from '@angular/core';
 import {
   ActivatedRoute,
   Router,
@@ -8,13 +13,16 @@ import {
 import { openPwaWindow } from '../open-pwa-window';
 import { DataSyncService } from '../store/data-sync.service';
 import { UserSessionService } from '../user-session/user-session.service';
+import { GraphComponent } from '../graph/graph.component';
+import { POKEMON_TYPE } from '../__typegen/types';
 
 @Component({
   selector: 'app-home',
   standalone: true,
-  imports: [RouterOutlet, RouterModule],
+  imports: [RouterOutlet, RouterModule, GraphComponent],
   templateUrl: './home.component.html',
   styleUrl: './home.component.scss',
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class HomeComponent implements OnInit {
   #router = inject(Router);
@@ -26,6 +34,7 @@ export class HomeComponent implements OnInit {
     console.log('OnInit lifecycle hook');
     this.establishUserSession();
     this.loadPokemon();
+    this.userSessionSvc.generateGraph([...POKEMON_TYPE]);
   }
 
   async loadPokemon() {

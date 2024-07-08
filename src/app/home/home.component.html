@@ -1,17 +1,22 @@
 <h1>PWA Testing</h1>
-<button style="background-color: var(--clr-bg);"><a routerLink="/home" routerLinkActive="active" ariaCurrentWhenActive="page">Home</a></button>
+<button style="background-color: var(--clr-bg);"><a routerLink="/home" routerLinkActive="active"
+        ariaCurrentWhenActive="page">Home</a></button>
+<nav>
+    <ul>
+        <li>
+            <a routerLink="./table" routerLinkActive="active" ariaCurrentWhenActive="page">Table</a>
+            <button (click)="popOutTable('table-standalone')" style="margin-inline: 0.25em;"><i
+                    class="ph ph-arrow-square-out"></i></button>
+        </li>
+        <li><a routerLink="./metrics" routerLinkActive="active" ariaCurrentWhenActive="page">Storage Metrics</a>
+        </li>
+    </ul>
+</nav>
 <main>
-    <nav>
-        <ul>
-            <li>
-                <a routerLink="./table" routerLinkActive="active" ariaCurrentWhenActive="page">Table</a>
-                <button (click)="popOutTable('table-standalone')" style="margin-inline: 0.25em;"><i
-                        class="ph ph-arrow-square-out"></i></button>
-            </li>
-            <li><a routerLink="./metrics" routerLinkActive="active" ariaCurrentWhenActive="page">Storage Metrics</a>
-            </li>
-        </ul>
-    </nav>
+    <div style="height: 50vh; width: 90vw;">
+        <app-graph [graph]="userSessionSvc.graph()"></app-graph>
+    </div>
+    <div>
+        <router-outlet></router-outlet>
+    </div>
 </main>
-
-<router-outlet></router-outlet>

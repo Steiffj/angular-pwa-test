@@ -9,10 +9,13 @@ import {
   SharedWorkerOnconnect,
 } from '../worker-messaging/typed-shared-worker';
 import { UserSessionMsg, UserSessionMsgType } from './user-session.service';
+import Graph from 'graphology';
+import { circular } from 'graphology-layout';
 
 export class UserSessionWorkerHandler {
   // Track which data each rx is interested in.
   readonly ports = new Map<UserSessionMsgType, MsgPort<UserSessionMsg>[]>();
+  #graph: Graph = new Graph();
 
   private setPort(port: MsgPort<UserSessionMsg>, types: UserSessionMsgType[]) {
     const registered: UserSessionMsgType[] = [];
@@ -74,6 +77,20 @@ export class UserSessionWorkerHandler {
           }
           break;
         }
+        case 'get-graph': {
+          this.#graph = await this.getPokemonTypeGraph(data.payload);
+          const serialized = this.#graph.export();
+          for (const rx of this.getPorts(type)) {
+            rx.postMessage({
+              type,
+              response: {
+                status: 'OK',
+                value: serialized,
+              },
+            });
+          }
+          break;
+        }
         default: {
           const _exhaustiveCheck: never = data;
           return _exhaustiveCheck;
@@ -95,5 +112,32 @@ export class UserSessionWorkerHandler {
     await tx.done;
     console.log(`Loaded ${list.length} ${type} pokemon`);
     return list;
+  }
+
+  async getPokemonTypeGraph(types: PokemonType[]) {
+    console.log('Creating graph from pokemon types');
+    const idb: IDB<TypesIDB> = await this.openDB('poke-types', 1);
+    const tx = idb.transaction(types, 'readonly');
+    const graph = new Graph();
+    for (const type of types) {
+      graph.addNode(type, {
+        label: type,
+        size: 10,
+      });
+      const store = tx.objectStore(type);
+      for await (const cursor of store.iterate()) {
+        const node = cursor.value;
+        if (!graph.hasNode(node.id)) {
+          graph.addNode(node.id, { ...node, label: node.name, size: 2 });
+        }
+        graph.addDirectedEdge(node.id, type, {
+          label: 'is type',
+        });
+      }
+    }
+
+    await tx.done;
+    circular.assign(graph);
+    return graph;
   }
 }

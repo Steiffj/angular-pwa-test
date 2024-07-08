@@ -1,16 +1,19 @@
-import { Injectable } from '@angular/core';
+import { Injectable, signal } from '@angular/core';
 import { Subject, firstValueFrom } from 'rxjs';
 import { PokemonType } from '../__typegen/types';
 import { Pokemon } from '../store/pokemon';
 import { MsgStruct } from '../worker-messaging/message-types';
 import { TypedSharedWorker } from '../worker-messaging/typed-shared-worker';
+import { SerializedGraph } from 'graphology-types';
+import Graph from 'graphology';
 
-const MSG_TYPES = ['misc', 'get-list-of-type'] as const;
+const MSG_TYPES = ['misc', 'get-list-of-type', 'get-graph'] as const;
 export type UserSessionMsgType = (typeof MSG_TYPES)[number];
 export type UserSessionMsg =
   | MsgStruct<'register', UserSessionMsgType[], UserSessionMsgType[]>
   | MsgStruct<(typeof MSG_TYPES)[0], string, string>
-  | MsgStruct<(typeof MSG_TYPES)[1], PokemonType, Pokemon[]>;
+  | MsgStruct<(typeof MSG_TYPES)[1], PokemonType, Pokemon[]>
+  | MsgStruct<(typeof MSG_TYPES)[2], PokemonType[], SerializedGraph>;
 
 @Injectable({
   providedIn: 'root',
@@ -18,6 +21,7 @@ export type UserSessionMsg =
 export class UserSessionService {
   #worker?: TypedSharedWorker<UserSessionMsg>;
   #incoming = new Subject<Pokemon[]>();
+  #graph = signal<Graph>(new Graph());
 
   async initSharedUserSession() {
     console.log('Starting shared worker');
@@ -48,7 +52,13 @@ export class UserSessionService {
         }
         case 'misc': {
           if (data.response.status === 'OK') {
-            console.log(data.response);
+            console.log(data.response.value);
+          }
+          break;
+        }
+        case 'get-graph': {
+          if (data.response.status === 'OK') {
+            this.#graph.set(Graph.from(data.response.value));
           }
           break;
         }
@@ -61,7 +71,7 @@ export class UserSessionService {
 
     worker.port.postMessage({
       type: 'register',
-      payload: ['get-list-of-type', 'misc'],
+      payload: ['get-list-of-type', 'get-graph'],
     });
 
     worker.port.postMessage({
@@ -83,5 +93,20 @@ export class UserSessionService {
       payload: type,
     });
     return await list;
+  }
+
+  generateGraph(types: PokemonType[]) {
+    if (!this.#worker) {
+      return;
+    }
+
+    this.#worker.port.postMessage({
+      type: 'get-graph',
+      payload: types,
+    });
+  }
+
+  get graph() {
+    return this.#graph.asReadonly();
   }
 }
