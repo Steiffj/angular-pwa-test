@@ -5,9 +5,12 @@ import { Pokemon } from '../store/pokemon';
 import { MsgStruct } from '../worker-messaging/message-types';
 import { TypedSharedWorker } from '../worker-messaging/typed-shared-worker';
 
+const MSG_TYPES = ['misc', 'get-list-of-type'] as const;
+export type UserSessionMsgType = (typeof MSG_TYPES)[number];
 export type UserSessionMsg =
-  | MsgStruct<'misc', string, string>
-  | MsgStruct<'get-list-of-type', PokemonType, Pokemon[]>;
+  | MsgStruct<'register', UserSessionMsgType[], UserSessionMsgType[]>
+  | MsgStruct<(typeof MSG_TYPES)[0], string, string>
+  | MsgStruct<(typeof MSG_TYPES)[1], PokemonType, Pokemon[]>;
 
 @Injectable({
   providedIn: 'root',
@@ -29,6 +32,14 @@ export class UserSessionService {
     worker.port.onmessage = ({ data }) => {
       const type = data.type;
       switch (type) {
+        case 'register': {
+          if (data.response.status === 'OK') {
+            console.log(
+              `Registered thread to receive '${data.response.value}' messages`
+            );
+          }
+          break;
+        }
         case 'get-list-of-type': {
           if (data.response.status === 'OK') {
             this.#incoming.next(data.response.value);
@@ -46,8 +57,12 @@ export class UserSessionService {
           return _exhaustiveCheck;
         }
       }
-      console.log('Received data from shared worker thread!!!');
     };
+
+    worker.port.postMessage({
+      type: 'register',
+      payload: ['get-list-of-type', 'misc'],
+    });
 
     worker.port.postMessage({
       type: 'misc',
