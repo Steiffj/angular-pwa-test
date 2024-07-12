@@ -1,7 +1,7 @@
-import { DataStore } from './grouped-map';
+import { GroupedMap } from './grouped-map';
 
 describe('DataStore', () => {
   it('should create an instance', () => {
-    expect(new DataStore()).toBeTruthy();
+    expect(new GroupedMap()).toBeTruthy();
   });
 });
