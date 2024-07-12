@@ -52,14 +52,14 @@ export class IdbGlobalSettings {
     IDBVersionChangeEvent: globalThis.IDBVersionChangeEvent,
   } as const;
 
-  static set mode(mode: 'persistent' | 'in-memory') {
+  static set mode(mode: 'disk' | 'ram') {
     switch (mode) {
-      case 'in-memory': {
-        this.setMode('in-memory', this.fake);
+      case 'ram': {
+        this.setMode('ram', this.fake);
         break;
       }
-      case 'persistent': {
-        this.setMode('persistent', this.real);
+      case 'disk': {
+        this.setMode('disk', this.real);
         break;
       }
       default: {
@@ -68,18 +68,18 @@ export class IdbGlobalSettings {
     }
   }
 
-  static get mode(): 'persistent' | 'in-memory' | 'invalid' {
-    if (this.isMode('persistent')) {
-      return 'persistent';
-    } else if (this.isMode('in-memory')) {
-      return 'in-memory';
+  static get mode(): 'disk' | 'ram' | 'invalid' {
+    if (this.isMode('disk')) {
+      return 'disk';
+    } else if (this.isMode('ram')) {
+      return 'ram';
     } else {
       return 'invalid';
     }
   }
 
   private static setMode(
-    mode: 'persistent' | 'in-memory',
+    mode: 'disk' | 'ram',
     globals: typeof IdbGlobalSettings.real
   ) {
     try {
@@ -100,8 +100,8 @@ export class IdbGlobalSettings {
     this.#ok = true;
   }
 
-  private static isMode(mode: 'persistent' | 'in-memory') {
-    const globals = mode === 'persistent' ? this.real : this.fake;
+  private static isMode(mode: 'disk' | 'ram') {
+    const globals = mode === 'disk' ? this.real : this.fake;
     for (const key of objectKeys(globals)) {
       if (globalThis[key] !== globals[key]) {
         return false;
