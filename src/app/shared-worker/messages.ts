@@ -15,6 +15,7 @@ export type RegisterMsg = MsgStruct<
   SharedWorkerMsgName[],
   SharedWorkerMsgName[]
 >;
+export type UnregisterMsg = MsgStruct<'unregister', null | undefined, boolean>;
 export type MiscMsg = MsgStruct<
   (typeof SHARED_WORKER_MESSAGE_TYPES)[0],
   string,
@@ -33,6 +34,7 @@ export type GetGraphMsg = MsgStruct<
 
 export type SharedWorkerMsg =
   | RegisterMsg
+  | UnregisterMsg
   | MiscMsg
   | GetListOfTypeMsg
   | GetGraphMsg;

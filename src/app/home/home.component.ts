@@ -43,7 +43,7 @@ export class HomeComponent implements OnInit {
   }
 
   async establishUserSession() {
-    await this.userSessionSvc.initSharedUserSession();
+    await this.userSessionSvc.connect();
   }
 
   openInNewWindow(route: string) {

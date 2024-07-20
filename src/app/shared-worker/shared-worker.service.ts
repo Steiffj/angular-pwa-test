@@ -1,5 +1,4 @@
 import { Injectable, signal } from '@angular/core';
-import { SHARED_WORKER_NAME } from '@worker-config/constants';
 import { TypedSharedWorker } from '@worker-types/typed-shared-worker';
 import Graph from 'graphology';
 import { Subject, firstValueFrom } from 'rxjs';
@@ -15,7 +14,16 @@ export class SharedWorkerService {
   #incoming = new Subject<Pokemon[]>();
   #graph = signal<Graph>(new Graph());
 
-  initSharedUserSession() {
+  disconnect() {
+    if (this.#worker) {
+      this.#worker.port.postMessage({
+        name: 'unregister',
+        payload: undefined,
+      });
+    }
+  }
+
+  connect() {
     console.log('Starting shared worker');
     const worker = new SharedWorker(
       new URL('./shared.worker', import.meta.url),
@@ -33,6 +41,13 @@ export class SharedWorkerService {
             console.log(
               `Registered thread to receive '${data.response.value}' messages`
             );
+          }
+          break;
+        }
+        case 'unregister': {
+          if (data.response.status === 'OK') {
+            console.log(`Unregister response: ${data.response.value}`);
+            worker.port.close();
           }
           break;
         }

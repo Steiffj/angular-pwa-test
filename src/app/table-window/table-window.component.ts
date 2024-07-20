@@ -20,7 +20,7 @@ export class TableWindowComponent implements OnInit {
   }
 
   async establishSession() {
-    await this.userSessionSvc.initSharedUserSession();
+    await this.userSessionSvc.connect();
   }
 
   async getSomePokemon() {

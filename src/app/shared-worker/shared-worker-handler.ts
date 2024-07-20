@@ -19,21 +19,30 @@ export class SharedWorkerHandler {
 
   private setPort(
     port: MsgPort<SharedWorkerMsg>,
-    types: SharedWorkerMsgName[]
+    messages: SharedWorkerMsgName[]
   ) {
     const registered: SharedWorkerMsgName[] = [];
-    for (const type of types) {
-      const ports = this.ports.get(type) ?? [];
+    for (const msg of messages) {
+      const ports = this.ports.get(msg) ?? [];
       if (!ports.includes(port)) {
-        this.ports.set(type, [port, ...ports]);
-        registered.push(type);
+        this.ports.set(msg, [port, ...ports]);
+        registered.push(msg);
       }
     }
     return registered;
   }
 
-  private getPorts(type: SharedWorkerMsgName) {
-    return this.ports.get(type) ?? [];
+  private clearPort(port: MsgPort<SharedWorkerMsg>) {
+    for (const activePorts of this.ports.values()) {
+      const index = activePorts.indexOf(port);
+      if (index > -1) {
+        activePorts.splice(index, 1);
+      }
+    }
+  }
+
+  private getPorts(msg: SharedWorkerMsgName) {
+    return this.ports.get(msg) ?? [];
   }
 
   constructor(readonly openDB: typeof idb.openDB<TypesIDB>) {}
@@ -53,6 +62,10 @@ export class SharedWorkerHandler {
               value: registered,
             },
           });
+          break;
+        }
+        case 'unregister': {
+          this.clearPort(port);
           break;
         }
         case 'get-list-of-type': {
