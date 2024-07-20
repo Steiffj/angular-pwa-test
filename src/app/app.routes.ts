@@ -1,5 +1,5 @@
 import { Routes } from '@angular/router';
-import { PokemonListComponent } from 'pokemon-list/pokemon-list.component';
+import { PokemonListComponent } from 'components/pokemon-list/pokemon-list.component';
 import { TablePopoutShellComponent } from './table-popout-shell/table-popout-shell.component';
 import { CombinedComponent } from './views/combined/combined.component';
 
