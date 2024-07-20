@@ -7,7 +7,7 @@ import { IDB, TypesIDB } from '../store/worker-generics';
 import {
   MsgPort,
   SharedWorkerOnconnect,
-} from '../worker-messaging/typed-shared-worker';
+} from '../worker-types/typed-shared-worker';
 import { UserSessionMsg, UserSessionMsgType } from './user-session.service';
 import Graph from 'graphology';
 import { circular } from 'graphology-layout';
@@ -116,27 +116,27 @@ export class UserSessionWorkerHandler {
 
   async getPokemonTypeGraph(types: PokemonType[]) {
     console.log('Creating graph from pokemon types');
-    const idb: IDB<TypesIDB> = await this.openDB('poke-types', 1);
-    const tx = idb.transaction(types, 'readonly');
+    // const idb: IDB<TypesIDB> = await this.openDB('poke-types', 1);
+    // const tx = idb.transaction(types, 'readonly');
     const graph = new Graph();
-    for (const type of types) {
-      graph.addNode(type, {
-        label: type,
-        size: 10,
-      });
-      const store = tx.objectStore(type);
-      for await (const cursor of store.iterate()) {
-        const node = cursor.value;
-        if (!graph.hasNode(node.id)) {
-          graph.addNode(node.id, { ...node, label: node.name, size: 2 });
-        }
-        graph.addDirectedEdge(node.id, type, {
-          label: 'is type',
-        });
-      }
-    }
+    // for (const type of types) {
+    //   graph.addNode(type, {
+    //     label: type,
+    //     size: 10,
+    //   });
+    //   const store = tx.objectStore(type);
+    //   for await (const cursor of store.iterate()) {
+    //     const node = cursor.value;
+    //     if (!graph.hasNode(node.id)) {
+    //       graph.addNode(node.id, { ...node, label: node.name, size: 2 });
+    //     }
+    //     graph.addDirectedEdge(node.id, type, {
+    //       label: 'is type',
+    //     });
+    //   }
+    // }
 
-    await tx.done;
+    // await tx.done;
     circular.assign(graph);
     return graph;
   }

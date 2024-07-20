@@ -1,7 +1,7 @@
 /// <reference lib="DOM" />
 
 import { openDB } from 'idb';
-import { SharedWorkerOnconnect } from '../worker-messaging/typed-shared-worker';
+import { SharedWorkerOnconnect } from '../worker-types/typed-shared-worker';
 import { UserSessionWorkerHandler } from './user-session-worker-handler';
 import { UserSessionMsg } from './user-session.service';
 

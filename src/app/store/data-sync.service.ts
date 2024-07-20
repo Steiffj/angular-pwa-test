@@ -1,8 +1,8 @@
 import { Injectable } from '@angular/core';
 import { Subject, firstValueFrom } from 'rxjs';
 import { POKEMON_TYPE, PokemonType } from '../__typegen/types';
-import { MsgStruct } from '../worker-messaging/message-types';
-import { TypedWorker } from '../worker-messaging/typed-worker';
+import { MsgStruct } from '../worker-types/message-types';
+import { TypedWorker } from '../worker-types/typed-worker';
 import { DBInfo, LoadResult } from './data-control.worker';
 
 export type DataSyncMsg<T extends string> =

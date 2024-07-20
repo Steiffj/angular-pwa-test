@@ -2,10 +2,11 @@ import { Injectable, signal } from '@angular/core';
 import { Subject, firstValueFrom } from 'rxjs';
 import { PokemonType } from '../__typegen/types';
 import { Pokemon } from '../store/pokemon';
-import { MsgStruct } from '../worker-messaging/message-types';
-import { TypedSharedWorker } from '../worker-messaging/typed-shared-worker';
+import { MsgStruct } from '../worker-types/message-types';
+import { TypedSharedWorker } from '@worker-types/typed-shared-worker';
 import { SerializedGraph } from 'graphology-types';
 import Graph from 'graphology';
+import { SHARED_WORKER_NAME } from '@worker-config/constants';
 
 const MSG_TYPES = ['misc', 'get-list-of-type', 'get-graph'] as const;
 export type UserSessionMsgType = (typeof MSG_TYPES)[number];
@@ -23,12 +24,12 @@ export class UserSessionService {
   #incoming = new Subject<Pokemon[]>();
   #graph = signal<Graph>(new Graph());
 
-  async initSharedUserSession() {
+  initSharedUserSession() {
     console.log('Starting shared worker');
     const worker = new SharedWorker(
       new URL('./user-session.worker', import.meta.url),
       {
-        name: 'PWA Test User Session Sync',
+        name: SHARED_WORKER_NAME,
         type: 'module',
       }
     ) as TypedSharedWorker<UserSessionMsg>;
