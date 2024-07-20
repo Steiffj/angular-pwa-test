@@ -1,7 +1,7 @@
 import { openDB } from 'idb';
 import { IdbGlobalSettings } from './idb-global-settings';
 
-fdescribe('IdbToggle', () => {
+describe('IdbToggle', () => {
   afterEach(() => {
     IdbGlobalSettings.mode = 'disk';
   });
