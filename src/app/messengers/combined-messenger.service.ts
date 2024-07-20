@@ -1,9 +1,7 @@
-import { Injectable } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
+import { TableMessengerService } from './table-messenger.service';
 
-@Injectable({
-  providedIn: 'root'
-})
+@Injectable()
 export class CombinedMessengerService {
-
-  constructor() { }
+  readonly table = inject(TableMessengerService);
 }
