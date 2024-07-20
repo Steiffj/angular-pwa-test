@@ -48,7 +48,7 @@ export class SharedWorkerHandler {
           break;
         }
         case 'unregister': {
-          this.connectedViews.add(data.payload);
+          this.connectedViews.delete(data.payload);
           this.multicaster.clearPort(port);
           break;
         }
