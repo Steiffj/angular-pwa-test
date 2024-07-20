@@ -1,5 +1,7 @@
 /// <reference lib="DOM" />
 
+import Graph from 'graphology';
+import { circular } from 'graphology-layout';
 import idb from 'idb';
 import { PokemonType } from '../__typegen/types';
 import { Pokemon } from '../store/pokemon';
@@ -8,17 +10,18 @@ import {
   MsgPort,
   SharedWorkerOnconnect,
 } from '../worker-types/typed-shared-worker';
-import { UserSessionMsg, UserSessionMsgType } from './user-session.service';
-import Graph from 'graphology';
-import { circular } from 'graphology-layout';
+import { SharedWorkerMsg, SharedWorkerMsgName } from './messages';
 
-export class UserSessionWorkerHandler {
+export class SharedWorkerHandler {
   // Track which data each rx is interested in.
-  readonly ports = new Map<UserSessionMsgType, MsgPort<UserSessionMsg>[]>();
+  readonly ports = new Map<SharedWorkerMsgName, MsgPort<SharedWorkerMsg>[]>();
   #graph: Graph = new Graph();
 
-  private setPort(port: MsgPort<UserSessionMsg>, types: UserSessionMsgType[]) {
-    const registered: UserSessionMsgType[] = [];
+  private setPort(
+    port: MsgPort<SharedWorkerMsg>,
+    types: SharedWorkerMsgName[]
+  ) {
+    const registered: SharedWorkerMsgName[] = [];
     for (const type of types) {
       const ports = this.ports.get(type) ?? [];
       if (!ports.includes(port)) {
@@ -29,22 +32,22 @@ export class UserSessionWorkerHandler {
     return registered;
   }
 
-  private getPorts(type: UserSessionMsgType) {
+  private getPorts(type: SharedWorkerMsgName) {
     return this.ports.get(type) ?? [];
   }
 
   constructor(readonly openDB: typeof idb.openDB<TypesIDB>) {}
 
-  readonly onconnect: SharedWorkerOnconnect<UserSessionMsg> = (e) => {
+  readonly onconnect: SharedWorkerOnconnect<SharedWorkerMsg> = (e) => {
     const port = e.ports[0];
 
     port.onmessage = async ({ data }) => {
-      const type = data.type;
-      switch (type) {
+      const name = data.name;
+      switch (name) {
         case 'register': {
           const registered = this.setPort(port, data.payload);
           port.postMessage({
-            type,
+            name,
             response: {
               status: 'OK',
               value: registered,
@@ -54,9 +57,9 @@ export class UserSessionWorkerHandler {
         }
         case 'get-list-of-type': {
           const res = await this.getListOfType(data.payload);
-          for (const rx of this.getPorts(type)) {
+          for (const rx of this.getPorts(name)) {
             rx.postMessage({
-              type,
+              name,
               response: {
                 status: 'OK',
                 value: res,
@@ -66,9 +69,9 @@ export class UserSessionWorkerHandler {
           break;
         }
         case 'misc': {
-          for (const rx of this.getPorts(type)) {
+          for (const rx of this.getPorts(name)) {
             rx.postMessage({
-              type,
+              name,
               response: {
                 status: 'OK',
                 value: `Shared worker response to ${data.payload}`,
@@ -80,9 +83,9 @@ export class UserSessionWorkerHandler {
         case 'get-graph': {
           this.#graph = await this.getPokemonTypeGraph(data.payload);
           const serialized = this.#graph.export();
-          for (const rx of this.getPorts(type)) {
+          for (const rx of this.getPorts(name)) {
             rx.postMessage({
-              type,
+              name,
               response: {
                 status: 'OK',
                 value: serialized,

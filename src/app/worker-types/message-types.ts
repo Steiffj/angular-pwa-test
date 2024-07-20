@@ -20,7 +20,7 @@ type Error = {
 };
 
 export type MsgStruct<T extends string, P, R> = {
-  type: T;
+  name: T;
   payload: Request<P>;
   response: Response<R>;
 };

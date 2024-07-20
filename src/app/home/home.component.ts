@@ -12,7 +12,7 @@ import {
 } from '@angular/router';
 import { openPwaWindow } from '../open-pwa-window';
 import { DataSyncService } from '../store/data-sync.service';
-import { UserSessionService } from '../user-session/user-session.service';
+import { SharedWorkerService } from '../shared-worker/shared-worker.service';
 import { GraphComponent } from '../graph/graph.component';
 import { POKEMON_TYPE } from '../__typegen/types';
 
@@ -28,7 +28,7 @@ export class HomeComponent implements OnInit {
   #router = inject(Router);
   #activatedRoute = inject(ActivatedRoute);
   readonly dataSyncSvc = inject(DataSyncService);
-  readonly userSessionSvc = inject(UserSessionService);
+  readonly userSessionSvc = inject(SharedWorkerService);
 
   ngOnInit() {
     console.log('OnInit lifecycle hook');

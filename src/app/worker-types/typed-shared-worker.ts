@@ -3,17 +3,17 @@
 import { UnionToIntersection } from './union-to-intersection';
 
 type TSharedWorker<T> = T extends {
-  type: infer A;
+  name: infer A;
   payload: infer B;
   response: infer C;
 }
   ? Omit<SharedWorker, 'port'> & {
       readonly port: Omit<MessagePort, 'postMessage' | 'onmessage'> & {
         postMessage: (
-          data: { type: A; payload: B },
+          data: { name: A; payload: B },
           options?: StructuredSerializeOptions
         ) => void;
-        onmessage: (event: MessageEvent<{ type: A; response: C }>) => void;
+        onmessage: (event: MessageEvent<{ name: A; response: C }>) => void;
       };
     }
   : never;
@@ -52,16 +52,16 @@ export type SharedWorkerOnconnect<T, D = any> = (
 
 export type MsgPort<T> = UnionToIntersection<
   T extends {
-    type: infer A;
+    name: infer A;
     payload: infer B;
     response: infer C;
   }
     ? Omit<MessagePort, 'postMessage' | 'onmessage'> & {
         postMessage: (
-          data: { type: A; response: C },
+          data: { name: A; response: C },
           options?: StructuredSerializeOptions
         ) => void;
-        onmessage: (event: MessageEvent<{ type: A; payload: B }>) => void;
+        onmessage: (event: MessageEvent<{ name: A; payload: B }>) => void;
       }
     : never
 >;

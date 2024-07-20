@@ -1,30 +1,8 @@
 import { Injectable } from '@angular/core';
 import { Subject, firstValueFrom } from 'rxjs';
 import { POKEMON_TYPE, PokemonType } from '../__typegen/types';
-import { MsgStruct } from '../worker-types/message-types';
 import { TypedWorker } from '../worker-types/typed-worker';
-import { DBInfo, LoadResult } from './data-control.worker';
-
-export type DataSyncMsg<T extends string> =
-  | MsgStruct<
-      'init',
-      {
-        apiUrl: string;
-        dbName: string;
-        dbVersion: number;
-        types: T[];
-      },
-      DBInfo
-    >
-  | MsgStruct<
-      'load-by-type',
-      {
-        url: string;
-        throttleTimeMs: number;
-        types: T[];
-      },
-      LoadResult<T>
-    >;
+import { DataSyncMsg } from './messages';
 
 /**
  * Features/learning TODO
@@ -79,7 +57,7 @@ export class DataSyncService {
     };
     this.worker.onmessage = listener;
     this.worker.postMessage({
-      type: 'init',
+      name: 'init',
       payload: {
         apiUrl: 'https://pokeapi.co/api/v2/',
         dbName: 'poke',
@@ -100,7 +78,7 @@ export class DataSyncService {
     const typeListUrl = new URL('type', 'https://pokeapi.co/api/v2/');
     typeListUrl.searchParams.set('limit', '100');
     this.worker.postMessage({
-      type: 'load-by-type',
+      name: 'load-by-type',
       payload: {
         url: typeListUrl.toString(),
         throttleTimeMs: 5 * 1000,

@@ -1,16 +1,16 @@
 import { UnionToIntersection } from './union-to-intersection';
 
 type TWorker<T> = T extends {
-  type: infer A;
+  name: infer A;
   payload: infer B;
   response: infer C;
 }
   ? Omit<Worker, 'onmessage' | 'postMessage'> & {
       postMessage: (
-        data: { type: A; payload: B },
+        data: { name: A; payload: B },
         options?: StructuredSerializeOptions
       ) => void;
-      onmessage: (event: MessageEvent<{ type: A; response: C }>) => void;
+      onmessage: (event: MessageEvent<{ name: A; response: C }>) => void;
     }
   : never;
 
@@ -47,11 +47,11 @@ export type TypedWorker<T> = UnionToIntersection<TWorker<T>>;
  */
 export type WorkerOnmessage<T> = UnionToIntersection<
   T extends {
-    type: infer A;
+    name: infer A;
     payload: infer B;
     response: infer _;
   }
-    ? (event: MessageEvent<{ type: A; payload: B }>) => void
+    ? (event: MessageEvent<{ name: A; payload: B }>) => void
     : never
 >;
 
@@ -76,10 +76,10 @@ export type WorkerOnmessage<T> = UnionToIntersection<
    */
 export type WorkerPostMessage<T> = UnionToIntersection<
   T extends {
-    type: infer A;
+    name: infer A;
     payload: infer _;
     response: infer C;
   }
-    ? (event: { type: A; response: C }) => void
+    ? (event: { name: A; response: C }) => void
     : never
 >;

@@ -1,5 +1,6 @@
 /// <reference lib="webworker" />
 
+import { WorkerOnmessage, WorkerPostMessage } from '@worker-types/typed-worker';
 import { DBSchema, openDB } from 'idb';
 import {
   Subject,
@@ -10,11 +11,7 @@ import {
   tap,
 } from 'rxjs';
 import { PokemonType } from '../__typegen/types';
-import {
-  WorkerOnmessage,
-  WorkerPostMessage,
-} from '../worker-messaging/typed-worker';
-import { DataSyncMsg } from './data-sync.service';
+import { DataSyncMsg } from './messages';
 import type {
   ConfigIDB,
   IDB,
@@ -45,7 +42,7 @@ declare let onmessage: WorkerOnmessage<DataSyncMsg<PokemonType>>;
 declare const postMessage: WorkerPostMessage<DataSyncMsg<PokemonType>>;
 onmessage = async ({ data: msg }) => {
   try {
-    switch (msg.type) {
+    switch (msg.name) {
       case 'init':
         try {
           dbInfo = await init(
@@ -55,7 +52,7 @@ onmessage = async ({ data: msg }) => {
             msg.payload.types
           );
           postMessage({
-            type: msg.type,
+            name: msg.name,
             response: {
               status: 'OK',
               value: dbInfo,
@@ -63,7 +60,7 @@ onmessage = async ({ data: msg }) => {
           });
         } catch (error) {
           postMessage({
-            type: msg.type,
+            name: msg.name,
             response: {
               status: 'ERROR',
               errors: ['Failed to initialize IDB'],
@@ -89,7 +86,7 @@ onmessage = async ({ data: msg }) => {
           msg.payload.throttleTimeMs
         );
         postMessage({
-          type: msg.type,
+          name: msg.name,
           response: {
             status: 'OK',
             value: info,

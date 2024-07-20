@@ -1,42 +1,33 @@
 import { Injectable, signal } from '@angular/core';
+import { SHARED_WORKER_NAME } from '@worker-config/constants';
+import { TypedSharedWorker } from '@worker-types/typed-shared-worker';
+import Graph from 'graphology';
 import { Subject, firstValueFrom } from 'rxjs';
 import { PokemonType } from '../__typegen/types';
 import { Pokemon } from '../store/pokemon';
-import { MsgStruct } from '../worker-types/message-types';
-import { TypedSharedWorker } from '@worker-types/typed-shared-worker';
-import { SerializedGraph } from 'graphology-types';
-import Graph from 'graphology';
-import { SHARED_WORKER_NAME } from '@worker-config/constants';
-
-const MSG_TYPES = ['misc', 'get-list-of-type', 'get-graph'] as const;
-export type UserSessionMsgType = (typeof MSG_TYPES)[number];
-export type UserSessionMsg =
-  | MsgStruct<'register', UserSessionMsgType[], UserSessionMsgType[]>
-  | MsgStruct<(typeof MSG_TYPES)[0], string, string>
-  | MsgStruct<(typeof MSG_TYPES)[1], PokemonType, Pokemon[]>
-  | MsgStruct<(typeof MSG_TYPES)[2], PokemonType[], SerializedGraph>;
+import { SharedWorkerMsg } from './messages';
 
 @Injectable({
   providedIn: 'root',
 })
-export class UserSessionService {
-  #worker?: TypedSharedWorker<UserSessionMsg>;
+export class SharedWorkerService {
+  #worker?: TypedSharedWorker<SharedWorkerMsg>;
   #incoming = new Subject<Pokemon[]>();
   #graph = signal<Graph>(new Graph());
 
   initSharedUserSession() {
     console.log('Starting shared worker');
     const worker = new SharedWorker(
-      new URL('./user-session.worker', import.meta.url),
+      new URL('./shared.worker', import.meta.url),
       {
-        name: SHARED_WORKER_NAME,
+        name: 'Test PWA Shared Worker',
         type: 'module',
       }
-    ) as TypedSharedWorker<UserSessionMsg>;
+    ) as TypedSharedWorker<SharedWorkerMsg>;
 
     worker.port.onmessage = ({ data }) => {
-      const type = data.type;
-      switch (type) {
+      const name = data.name;
+      switch (name) {
         case 'register': {
           if (data.response.status === 'OK') {
             console.log(
@@ -71,12 +62,12 @@ export class UserSessionService {
     };
 
     worker.port.postMessage({
-      type: 'register',
+      name: 'register',
       payload: ['get-list-of-type', 'get-graph'],
     });
 
     worker.port.postMessage({
-      type: 'misc',
+      name: 'misc',
       payload: 'hello from UI thread :)',
     });
 
@@ -90,7 +81,7 @@ export class UserSessionService {
 
     const list = firstValueFrom(this.#incoming);
     this.#worker.port.postMessage({
-      type: 'get-list-of-type',
+      name: 'get-list-of-type',
       payload: type,
     });
     return await list;
@@ -102,7 +93,7 @@ export class UserSessionService {
     }
 
     this.#worker.port.postMessage({
-      type: 'get-graph',
+      name: 'get-graph',
       payload: types,
     });
   }
