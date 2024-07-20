@@ -17,14 +17,14 @@ import { GraphComponent } from '../../graph/graph.component';
 import { POKEMON_TYPE } from '../../__typegen/types';
 
 @Component({
-  selector: 'app-home',
+  selector: 'app-combined',
   standalone: true,
   imports: [RouterOutlet, RouterModule, GraphComponent],
-  templateUrl: './home.component.html',
-  styleUrl: './home.component.scss',
+  templateUrl: './combined.component.html',
+  styleUrl: './combined.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class HomeComponent implements OnInit {
+export class CombinedComponent implements OnInit {
   #router = inject(Router);
   #activatedRoute = inject(ActivatedRoute);
   readonly dataSyncSvc = inject(DataSyncService);

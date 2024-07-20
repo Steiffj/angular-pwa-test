@@ -4,11 +4,11 @@ import { PokemonListComponent } from '../../pokemon-list/pokemon-list.component'
 import { Pokemon } from '../../store/pokemon';
 
 @Component({
-  selector: 'app-table-window',
+  selector: 'app-table',
   standalone: true,
   imports: [PokemonListComponent],
-  templateUrl: './table-window.component.html',
-  styleUrl: './table-window.component.scss',
+  templateUrl: './table.component.html',
+  styleUrl: './table.component.scss',
 })
 export class TableWindowComponent implements OnInit {
   readonly userSessionSvc = inject(SharedWorkerService);

@@ -1,6 +1,6 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
-import { TableWindowComponent } from './table-window.component';
+import { TableWindowComponent } from './table.component';
 
 describe('TableWindowComponent', () => {
   let component: TableWindowComponent;
@@ -8,9 +8,8 @@ describe('TableWindowComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [TableWindowComponent]
-    })
-    .compileComponents();
+      imports: [TableWindowComponent],
+    }).compileComponents();
 
     fixture = TestBed.createComponent(TableWindowComponent);
     component = fixture.componentInstance;

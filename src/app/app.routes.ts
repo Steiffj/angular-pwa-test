@@ -1,13 +1,14 @@
 import { Routes } from '@angular/router';
-import { HomeComponent } from './views/home/home.component';
+import { PokemonListComponent } from 'pokemon-list/pokemon-list.component';
 import { TablePopoutShellComponent } from './table-popout-shell/table-popout-shell.component';
+import { CombinedComponent } from './views/combined/combined.component';
 
 export const routes: Routes = [
   { path: '', pathMatch: 'full', redirectTo: 'home' },
   {
     path: 'home',
     title: 'Home',
-    component: HomeComponent,
+    component: CombinedComponent,
     children: [
       {
         path: '',
@@ -20,10 +21,7 @@ export const routes: Routes = [
       {
         path: 'table',
         title: 'Table',
-        loadComponent: () =>
-          import('./pokemon-list/pokemon-list.component').then(
-            (m) => m.PokemonListComponent
-          ),
+        component: PokemonListComponent,
       },
     ],
   },
@@ -32,7 +30,7 @@ export const routes: Routes = [
     pathMatch: 'full',
     title: 'Table (Standalone)',
     loadComponent: () =>
-      import('./views/table-window/table-window.component').then(
+      import('./views/table/table.component').then(
         (m) => m.TableWindowComponent
       ),
   },
