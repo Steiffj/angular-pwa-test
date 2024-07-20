@@ -13,7 +13,7 @@ import {
 import { openPwaWindow } from '../../open-pwa-window';
 import { DataSyncService } from '../../store/data-sync.service';
 import { SharedWorkerService } from '../../shared-worker/shared-worker.service';
-import { GraphComponent } from '../../graph/graph.component';
+import { GraphComponent } from '../../components/graph/graph.component';
 import { POKEMON_TYPE } from '../../__typegen/types';
 
 @Component({
