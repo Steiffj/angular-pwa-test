@@ -23,6 +23,7 @@
     "@sigma/edge-curve": "^3.0.0-beta.13",
     "@sigma/node-border": "^3.0.0-beta.4",
     "@sigma/node-image": "^3.0.0-beta.12",
+    "fake-indexeddb": "^6.0.0",
     "graphology": "^0.25.4",
     "graphology-layout": "^0.6.1",
     "graphology-layout-forceatlas2": "^0.10.1",
