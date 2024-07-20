@@ -1,7 +1,7 @@
 import { Component, OnInit, inject, signal } from '@angular/core';
-import { SharedWorkerService } from '../shared-worker/shared-worker.service';
-import { PokemonListComponent } from '../pokemon-list/pokemon-list.component';
-import { Pokemon } from '../store/pokemon';
+import { SharedWorkerService } from '../../shared-worker/shared-worker.service';
+import { PokemonListComponent } from '../../pokemon-list/pokemon-list.component';
+import { Pokemon } from '../../store/pokemon';
 
 @Component({
   selector: 'app-table-window',
