@@ -1,0 +1,10 @@
+{
+  "$schema": "../node_modules/@angular-devkit/schematics/collection-schema.json",
+  "schematics": {
+      "messenger": {
+        "description": "Generate a messenger service that handles shared worker communication.",
+        "factory": "./messenger/index#messenger",
+        "schema": "./messenger/schema.json"
+      }
+    }
+  }
