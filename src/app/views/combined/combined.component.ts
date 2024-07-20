@@ -12,12 +12,12 @@ import {
   RouterOutlet,
 } from '@angular/router';
 import { CombinedMessengerService } from 'messengers/combined-messenger.service';
+import { TableMessengerService } from 'messengers/table-messenger.service';
+import { VisualizationMessengerService } from 'messengers/visualization-messenger.service';
 import { POKEMON_TYPE } from '../../__typegen/types';
 import { GraphComponent } from '../../components/graph/graph.component';
 import { openPwaWindow } from '../../open-pwa-window';
 import { DataSyncService } from '../../store/data-sync.service';
-import { TableMessengerService } from 'messengers/table-messenger.service';
-import { VisualizationMessengerService } from 'messengers/visualization-messenger.service';
 
 @Component({
   selector: 'app-combined',
@@ -37,6 +37,12 @@ export class CombinedComponent implements OnInit, OnDestroy {
   #activatedRoute = inject(ActivatedRoute);
   readonly dataSyncSvc = inject(DataSyncService);
   readonly messenger = inject(CombinedMessengerService);
+
+  constructor() {
+    globalThis.onbeforeunload = () => {
+      this.messenger.disconnect();
+    };
+  }
 
   ngOnInit() {
     console.log('OnInit lifecycle hook');

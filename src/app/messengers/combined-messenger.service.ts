@@ -17,12 +17,12 @@ export class CombinedMessengerService implements MessengerService {
       }
     );
 
-    this.table.connect(worker);
-    this.visualization.connect(worker);
+    this.table.connect('combined', worker);
+    this.visualization.connect('combined', worker);
   }
 
   disconnect() {
-    this.table.disconnect();
-    this.visualization.disconnect();
+    this.table.disconnect('combined');
+    this.visualization.disconnect('combined');
   }
 }

@@ -7,6 +7,7 @@ import {
   RegisterMsg,
   UnregisterMsg,
 } from 'shared-worker/messages';
+import { ViewName } from 'views/view-name';
 import { MessengerService } from './messenger-service';
 
 export type VisualizationMessages = RegisterMsg | UnregisterMsg | GetGraphMsg;
@@ -18,16 +19,16 @@ export class VisualizationMessengerService implements MessengerService {
   #worker?: TypedSharedWorker<VisualizationMessages>;
   #graph = signal<Graph>(new Graph());
 
-  disconnect() {
+  disconnect(view: ViewName) {
     if (this.#worker) {
       this.#worker.port.postMessage({
         name: 'unregister',
-        payload: undefined,
+        payload: view,
       });
     }
   }
 
-  connect(sharedWorker?: SharedWorker) {
+  connect(view: ViewName, sharedWorker?: SharedWorker) {
     console.log('Connecting to shared worker');
     const worker = !!sharedWorker
       ? (sharedWorker as TypedSharedWorker<VisualizationMessages>)
@@ -72,7 +73,10 @@ export class VisualizationMessengerService implements MessengerService {
 
     worker.port.postMessage({
       name: 'register',
-      payload: ['get-list-of-type', 'get-graph'],
+      payload: {
+        view,
+        messages: ['get-list-of-type', 'get-graph'],
+      },
     });
 
     this.#worker = worker;

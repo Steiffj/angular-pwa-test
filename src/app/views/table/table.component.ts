@@ -17,17 +17,18 @@ export class TableWindowComponent implements OnInit, OnDestroy {
 
   constructor() {
     globalThis.onbeforeunload = () => {
-      this.messenger.disconnect();
+      this.messenger.disconnect('table');
     };
   }
 
   ngOnInit() {
-    this.messenger.connect();
+    this.messenger.connect('table');
     this.getSomePokemon();
   }
 
   ngOnDestroy() {
-    this.messenger.disconnect();
+    console.log('Disconnecting from shared worker (component destroyed)');
+    this.messenger.disconnect('table');
   }
 
   async getSomePokemon() {

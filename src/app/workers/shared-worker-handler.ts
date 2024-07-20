@@ -45,11 +45,13 @@ export class SharedWorkerHandler {
               value: registered,
             },
           });
+          console.log(`Registered port for view '${data.payload.view}'`);
           break;
         }
         case 'unregister': {
           this.connectedViews.delete(data.payload);
           this.multicaster.clearPort(port);
+          console.log(`Unregistered port for view '${data.payload}'`);
           break;
         }
         case 'get-list-of-type': {

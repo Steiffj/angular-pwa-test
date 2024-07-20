@@ -1,6 +1,6 @@
-import { TypedSharedWorker } from '@worker-types/typed-shared-worker';
+import { ViewName } from 'views/view-name';
 
 export interface MessengerService {
-  connect(worker?: SharedWorker): void;
-  disconnect(): void;
+  connect(view: ViewName, worker?: SharedWorker): void;
+  disconnect(view: ViewName): void;
 }

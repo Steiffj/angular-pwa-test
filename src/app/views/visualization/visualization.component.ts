@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component } from '@angular/core';
+import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
 import { VisualizationMessengerService } from 'messengers/visualization-messenger.service';
 
 @Component({
@@ -10,4 +10,21 @@ import { VisualizationMessengerService } from 'messengers/visualization-messenge
   styleUrl: './visualization.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class VisualizationComponent {}
+export class VisualizationComponent {
+  readonly messenger = inject(VisualizationMessengerService);
+
+  constructor() {
+    globalThis.onbeforeunload = () => {
+      this.messenger.disconnect('visualization');
+    };
+  }
+
+  ngOnInit() {
+    this.messenger.connect('table');
+  }
+
+  ngOnDestroy() {
+    console.log('Disconnecting from shared worker (component destroyed)');
+    this.messenger.disconnect('visualization');
+  }
+}

@@ -9,6 +9,7 @@ import {
 } from 'shared-worker/messages';
 import { Pokemon } from 'store/pokemon';
 import { MessengerService } from './messenger-service';
+import { ViewName } from 'views/view-name';
 
 export type TableMessages = RegisterMsg | UnregisterMsg | GetListOfTypeMsg;
 
@@ -17,16 +18,16 @@ export class TableMessengerService implements MessengerService {
   #worker?: TypedSharedWorker<TableMessages>;
   #incoming = new Subject<Pokemon[]>();
 
-  disconnect() {
+  disconnect(view: ViewName) {
     if (this.#worker) {
       this.#worker.port.postMessage({
         name: 'unregister',
-        payload: undefined,
+        payload: view,
       });
     }
   }
 
-  connect(sharedWorker?: SharedWorker) {
+  connect(view: ViewName, sharedWorker?: SharedWorker) {
     console.log('Connecting to shared worker');
     const worker: TypedSharedWorker<TableMessages> = !!sharedWorker
       ? (sharedWorker as TypedSharedWorker<TableMessages>)
@@ -71,7 +72,10 @@ export class TableMessengerService implements MessengerService {
 
     worker.port.postMessage({
       name: 'register',
-      payload: ['get-list-of-type'],
+      payload: {
+        view,
+        messages: ['get-list-of-type'],
+      },
     });
 
     this.#worker = worker;
