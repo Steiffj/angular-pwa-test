@@ -1,6 +1,5 @@
 import { Component, OnDestroy, OnInit, inject, signal } from '@angular/core';
 import { TableMessengerService } from 'messengers/table-messenger.service';
-import { VisualizationMessengerService } from 'messengers/visualization-messenger.service';
 import { PokemonListComponent } from '../../components/pokemon-list/pokemon-list.component';
 import { Pokemon } from '../../store/pokemon';
 
@@ -15,6 +14,12 @@ import { Pokemon } from '../../store/pokemon';
 export class TableWindowComponent implements OnInit, OnDestroy {
   readonly messenger = inject(TableMessengerService);
   pokemon = signal<Pokemon[]>([]);
+
+  constructor() {
+    globalThis.onbeforeunload = () => {
+      this.messenger.disconnect();
+    };
+  }
 
   ngOnInit() {
     this.messenger.connect();
