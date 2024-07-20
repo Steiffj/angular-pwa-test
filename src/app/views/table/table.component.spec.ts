@@ -1,13 +1,15 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
+import { TableMessengerService } from 'messengers/table-messenger.service';
 import { TableWindowComponent } from './table.component';
 
-describe('TableWindowComponent', () => {
+describe('TableComponent', () => {
   let component: TableWindowComponent;
   let fixture: ComponentFixture<TableWindowComponent>;
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
+      providers: [TableMessengerService],
       imports: [TableWindowComponent],
     }).compileComponents();
 

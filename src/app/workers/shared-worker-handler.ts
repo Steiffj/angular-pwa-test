@@ -4,13 +4,16 @@ import Graph from 'graphology';
 import { circular } from 'graphology-layout';
 import idb from 'idb';
 import { PokemonType } from '../__typegen/types';
+import {
+  SharedWorkerMsg,
+  SharedWorkerMsgName,
+} from '../shared-worker/messages';
 import { Pokemon } from '../store/pokemon';
 import { IDB, TypesIDB } from '../store/worker-generics';
 import {
   MsgPort,
   SharedWorkerOnconnect,
 } from '../worker-types/typed-shared-worker';
-import { SharedWorkerMsg, SharedWorkerMsgName } from './messages';
 
 export class SharedWorkerHandler {
   // Track which data each rx is interested in.

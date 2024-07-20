@@ -30,10 +30,13 @@ export class TableMessengerService implements MessengerService {
     console.log('Connecting to shared worker');
     const worker: TypedSharedWorker<TableMessages> = !!sharedWorker
       ? (sharedWorker as TypedSharedWorker<TableMessages>)
-      : (new SharedWorker(new URL('./shared.worker', import.meta.url), {
-          name: 'Test PWA Shared Worker',
-          type: 'module',
-        }) as TypedSharedWorker<TableMessages>);
+      : (new SharedWorker(
+          new URL('../workers/shared.worker', import.meta.url),
+          {
+            name: 'Test PWA Shared Worker',
+            type: 'module',
+          }
+        ) as TypedSharedWorker<TableMessages>);
 
     worker.port.onmessage = ({ data }) => {
       const name = data.name;
@@ -68,7 +71,7 @@ export class TableMessengerService implements MessengerService {
 
     worker.port.postMessage({
       name: 'register',
-      payload: ['get-graph'],
+      payload: ['get-list-of-type'],
     });
 
     this.#worker = worker;

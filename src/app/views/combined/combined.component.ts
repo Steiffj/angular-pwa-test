@@ -1,6 +1,7 @@
 import {
   ChangeDetectionStrategy,
   Component,
+  OnDestroy,
   OnInit,
   inject,
 } from '@angular/core';
@@ -10,40 +11,47 @@ import {
   RouterModule,
   RouterOutlet,
 } from '@angular/router';
+import { CombinedMessengerService } from 'messengers/combined-messenger.service';
+import { POKEMON_TYPE } from '../../__typegen/types';
+import { GraphComponent } from '../../components/graph/graph.component';
 import { openPwaWindow } from '../../open-pwa-window';
 import { DataSyncService } from '../../store/data-sync.service';
-import { SharedWorkerService } from '../../shared-worker/shared-worker.service';
-import { GraphComponent } from '../../components/graph/graph.component';
-import { POKEMON_TYPE } from '../../__typegen/types';
+import { TableMessengerService } from 'messengers/table-messenger.service';
+import { VisualizationMessengerService } from 'messengers/visualization-messenger.service';
 
 @Component({
   selector: 'app-combined',
   standalone: true,
   imports: [RouterOutlet, RouterModule, GraphComponent],
+  providers: [
+    CombinedMessengerService,
+    TableMessengerService,
+    VisualizationMessengerService,
+  ],
   templateUrl: './combined.component.html',
   styleUrl: './combined.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class CombinedComponent implements OnInit {
+export class CombinedComponent implements OnInit, OnDestroy {
   #router = inject(Router);
   #activatedRoute = inject(ActivatedRoute);
   readonly dataSyncSvc = inject(DataSyncService);
-  readonly userSessionSvc = inject(SharedWorkerService);
+  readonly messenger = inject(CombinedMessengerService);
 
   ngOnInit() {
     console.log('OnInit lifecycle hook');
-    this.establishUserSession();
+    this.messenger.connect();
     this.loadPokemon();
-    this.userSessionSvc.generateGraph([...POKEMON_TYPE]);
+    this.messenger.visualization.generateGraph([...POKEMON_TYPE]);
+  }
+
+  ngOnDestroy() {
+    this.messenger.disconnect();
   }
 
   async loadPokemon() {
     await this.dataSyncSvc.initWebWorker();
     this.dataSyncSvc.loadPokemonByType();
-  }
-
-  async establishUserSession() {
-    await this.userSessionSvc.connect();
   }
 
   openInNewWindow(route: string) {

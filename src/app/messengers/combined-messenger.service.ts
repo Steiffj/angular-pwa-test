@@ -1,7 +1,7 @@
 import { Injectable, inject } from '@angular/core';
+import { MessengerService } from './messenger-service';
 import { TableMessengerService } from './table-messenger.service';
 import { VisualizationMessengerService } from './visualization-messenger.service';
-import { MessengerService } from './messenger-service';
 
 @Injectable()
 export class CombinedMessengerService implements MessengerService {
@@ -10,7 +10,7 @@ export class CombinedMessengerService implements MessengerService {
 
   connect() {
     const worker = new SharedWorker(
-      new URL('./shared.worker', import.meta.url),
+      new URL('../workers/shared.worker', import.meta.url),
       {
         name: 'Test PWA Shared Worker',
         type: 'module',
