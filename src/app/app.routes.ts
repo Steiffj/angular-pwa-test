@@ -1,5 +1,5 @@
 import { Routes } from '@angular/router';
-import { HomeComponent } from './home/home.component';
+import { HomeComponent } from './views/home/home.component';
 import { TablePopoutShellComponent } from './table-popout-shell/table-popout-shell.component';
 
 export const routes: Routes = [
@@ -32,8 +32,17 @@ export const routes: Routes = [
     pathMatch: 'full',
     title: 'Table (Standalone)',
     loadComponent: () =>
-      import('./table-window/table-window.component').then(
+      import('./views/table-window/table-window.component').then(
         (m) => m.TableWindowComponent
+      ),
+  },
+  {
+    path: 'visualization-standalone',
+    pathMatch: 'full',
+    title: 'Visualization (Standalone)',
+    loadComponent: () =>
+      import('./views/visualization/visualization.component').then(
+        (m) => m.VisualizationComponent
       ),
   },
 ];
