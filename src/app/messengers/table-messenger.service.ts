@@ -8,12 +8,13 @@ import {
   UnregisterMsg,
 } from 'shared-worker/messages';
 import { Pokemon } from 'store/pokemon';
+import { MessengerService } from './messenger-service';
 
-type Messages = RegisterMsg | UnregisterMsg | GetListOfTypeMsg;
+export type TableMessages = RegisterMsg | UnregisterMsg | GetListOfTypeMsg;
 
 @Injectable()
-export class TableMessengerService {
-  #worker?: TypedSharedWorker<Messages>;
+export class TableMessengerService implements MessengerService {
+  #worker?: TypedSharedWorker<TableMessages>;
   #incoming = new Subject<Pokemon[]>();
 
   disconnect() {
@@ -25,15 +26,14 @@ export class TableMessengerService {
     }
   }
 
-  connect() {
-    console.log('Starting shared worker');
-    const worker = new SharedWorker(
-      new URL('./shared.worker', import.meta.url),
-      {
-        name: 'Test PWA Shared Worker',
-        type: 'module',
-      }
-    ) as TypedSharedWorker<Messages>;
+  connect(sharedWorker?: SharedWorker) {
+    console.log('Connecting to shared worker');
+    const worker: TypedSharedWorker<TableMessages> = !!sharedWorker
+      ? (sharedWorker as TypedSharedWorker<TableMessages>)
+      : (new SharedWorker(new URL('./shared.worker', import.meta.url), {
+          name: 'Test PWA Shared Worker',
+          type: 'module',
+        }) as TypedSharedWorker<TableMessages>);
 
     worker.port.onmessage = ({ data }) => {
       const name = data.name;

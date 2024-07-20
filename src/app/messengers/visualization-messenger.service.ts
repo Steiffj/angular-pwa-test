@@ -7,14 +7,15 @@ import {
   RegisterMsg,
   UnregisterMsg,
 } from 'shared-worker/messages';
+import { MessengerService } from './messenger-service';
 
-type Messages = RegisterMsg | UnregisterMsg | GetGraphMsg;
+export type VisualizationMessages = RegisterMsg | UnregisterMsg | GetGraphMsg;
 
 @Injectable({
   providedIn: 'root',
 })
-export class VisualizationMessengerService {
-  #worker?: TypedSharedWorker<Messages>;
+export class VisualizationMessengerService implements MessengerService {
+  #worker?: TypedSharedWorker<VisualizationMessages>;
   #graph = signal<Graph>(new Graph());
 
   disconnect() {
@@ -26,15 +27,14 @@ export class VisualizationMessengerService {
     }
   }
 
-  connect() {
-    console.log('Starting shared worker');
-    const worker = new SharedWorker(
-      new URL('./shared.worker', import.meta.url),
-      {
-        name: 'Test PWA Shared Worker',
-        type: 'module',
-      }
-    ) as TypedSharedWorker<Messages>;
+  connect(sharedWorker?: SharedWorker) {
+    console.log('Connecting to shared worker');
+    const worker = !!sharedWorker
+      ? (sharedWorker as TypedSharedWorker<VisualizationMessages>)
+      : (new SharedWorker(new URL('./shared.worker', import.meta.url), {
+          name: 'Test PWA Shared Worker',
+          type: 'module',
+        }) as TypedSharedWorker<VisualizationMessages>);
 
     worker.port.onmessage = ({ data }) => {
       const name = data.name;
