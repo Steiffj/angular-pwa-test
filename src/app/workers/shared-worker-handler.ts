@@ -21,7 +21,7 @@ export class SharedWorkerHandler {
     SharedWorkerMsgName,
     SharedWorkerMsg
   >();
-  readonly connectedViews = new Set<ViewName>();
+  readonly connectedViews = new Map<ViewName, number>();
 
   #graph: Graph = new Graph();
 
@@ -34,7 +34,9 @@ export class SharedWorkerHandler {
       const name = data.name;
       switch (name) {
         case 'register': {
-          this.connectedViews.add(data.payload.view);
+          const existingViewCount =
+            this.connectedViews.get(data.payload.view) ?? 0;
+          this.connectedViews.set(data.payload.view, existingViewCount + 1);
           const registered = this.multicaster.setPort(
             port,
             data.payload.messages
@@ -50,9 +52,13 @@ export class SharedWorkerHandler {
           break;
         }
         case 'unregister': {
-          this.connectedViews.delete(data.payload);
+          const viewCount = this.connectedViews.get(data.payload) ?? 1;
+          this.connectedViews.set(data.payload, viewCount - 1);
           this.multicaster.clearPort(port);
-          console.log(`Unregistered port for view '${data.payload}'`);
+          const updatedCount = this.connectedViews.get(data.payload);
+          console.log(
+            `Unregistered port for view '${data.payload}'. Connected '${data.payload}'s remaining: ${updatedCount}`
+          );
           break;
         }
         case 'get-list-of-type': {
