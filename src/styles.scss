@@ -1,4 +1,5 @@
 /* You can add global styles to this file, and also import other style files */
+@use 'styles/button-icon';
 
 // @import "@phosphor-icons/web/";
 @import '../node_modules/@phosphor-icons/web/src/regular/style.css'; // This is so not right
@@ -39,6 +40,7 @@ body {
 
     a:hover {
         color: var(--clr-accent-light);
+        cursor: pointer;
     }
 
     button {

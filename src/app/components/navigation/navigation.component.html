@@ -3,11 +3,16 @@
     <nav>
         <ul>
             <li>
-                <a routerLink="./table" routerLinkActive="active" ariaCurrentWhenActive="page">Table</a>
+                <a routerLink="combined" routerLinkActive="active" ariaCurrentWhenActive="page">Combined</a>
             </li>
             <li>
-                <button (click)="popOutTable('table-standalone')" style="margin-inline: 0.25em;"><i
-                        class="ph ph-arrow-square-out"></i></button>
+                <a routerLink="visualization-standalone" routerLinkActive="active" ariaCurrentWhenActive="page">Visualization</a>
+            </li>
+            <li>
+                <a routerLink="table-standalone" routerLinkActive="active" ariaCurrentWhenActive="page">Table</a>
+            </li>
+            <li>
+                <button icon="ph ph-arrow-square-out" (click)="popOutTable('table-standalone')"></button>
             </li>
         </ul>
     </nav>

@@ -1,11 +1,12 @@
 import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
+import { IconButtonDirective } from 'directives/icon-button.directive';
 import { openPwaWindow } from 'open-pwa-window';
 
 @Component({
   selector: 'app-navigation',
   standalone: true,
-  imports: [],
+  imports: [IconButtonDirective],
   templateUrl: './navigation.component.html',
   styleUrl: './navigation.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
