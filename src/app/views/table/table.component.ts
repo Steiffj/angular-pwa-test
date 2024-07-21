@@ -1,7 +1,6 @@
-import { Component, OnDestroy, OnInit, inject, signal } from '@angular/core';
+import { Component, OnDestroy, OnInit, inject } from '@angular/core';
 import { TableMessengerService } from 'messengers/table-messenger.service';
 import { PokemonListComponent } from '../../components/pokemon-list/pokemon-list.component';
-import { Pokemon } from '../../store/pokemon';
 
 @Component({
   selector: 'app-table',
@@ -13,7 +12,6 @@ import { Pokemon } from '../../store/pokemon';
 })
 export class TableWindowComponent implements OnInit, OnDestroy {
   readonly messenger = inject(TableMessengerService);
-  pokemon = signal<Pokemon[]>([]);
 
   constructor() {
     globalThis.onbeforeunload = () => {
@@ -23,16 +21,11 @@ export class TableWindowComponent implements OnInit, OnDestroy {
 
   ngOnInit() {
     this.messenger.connect('table');
-    this.getSomePokemon();
+    this.messenger.selectedType = 'grass';
   }
 
   ngOnDestroy() {
     console.log('Disconnecting from shared worker (component destroyed)');
     this.messenger.disconnect('table');
-  }
-
-  async getSomePokemon() {
-    const list = await this.messenger.getPokemonList('fairy');
-    this.pokemon.set(list);
   }
 }

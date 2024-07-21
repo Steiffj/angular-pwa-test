@@ -1,10 +1,12 @@
 import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
+import { POKEMON_TYPE } from '__typegen/types';
+import { GraphComponent } from 'components/graph/graph.component';
 import { VisualizationMessengerService } from 'messengers/visualization-messenger.service';
 
 @Component({
   selector: 'app-visualization',
   standalone: true,
-  imports: [],
+  imports: [GraphComponent],
   providers: [VisualizationMessengerService],
   templateUrl: './visualization.component.html',
   styleUrl: './visualization.component.scss',
@@ -20,7 +22,8 @@ export class VisualizationComponent {
   }
 
   ngOnInit() {
-    this.messenger.connect('table');
+    this.messenger.connect('visualization');
+    this.messenger.generateGraph([...POKEMON_TYPE]);
   }
 
   ngOnDestroy() {

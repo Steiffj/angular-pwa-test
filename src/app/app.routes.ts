@@ -1,29 +1,12 @@
 import { Routes } from '@angular/router';
-import { PokemonListComponent } from 'components/pokemon-list/pokemon-list.component';
-import { TablePopoutShellComponent } from './components/table-popout-shell/table-popout-shell.component';
 import { CombinedComponent } from './views/combined/combined.component';
 
 export const routes: Routes = [
-  { path: '', pathMatch: 'full', redirectTo: 'home' },
+  { path: '', pathMatch: 'full', redirectTo: 'combined' },
   {
-    path: 'home',
-    title: 'Home',
+    path: 'combined',
+    title: 'Combined',
     component: CombinedComponent,
-    children: [
-      {
-        path: '',
-        component: TablePopoutShellComponent,
-      },
-      {
-        path: 'table-popout',
-        redirectTo: '',
-      },
-      {
-        path: 'table',
-        title: 'Table',
-        component: PokemonListComponent,
-      },
-    ],
   },
   {
     path: 'table-standalone',

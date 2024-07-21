@@ -18,6 +18,7 @@ export type VisualizationMessages = RegisterMsg | UnregisterMsg | GetGraphMsg;
 export class VisualizationMessengerService implements MessengerService {
   #worker?: TypedSharedWorker<VisualizationMessages>;
   #graph = signal<Graph>(new Graph());
+  readonly graph = this.#graph.asReadonly();
 
   disconnect(view: ViewName) {
     if (this.#worker) {
@@ -28,20 +29,19 @@ export class VisualizationMessengerService implements MessengerService {
     }
   }
 
-  connect(view: ViewName, sharedWorker?: SharedWorker) {
+  connect(view: ViewName) {
     console.log('Connecting to shared worker');
-    const worker = !!sharedWorker
-      ? (sharedWorker as TypedSharedWorker<VisualizationMessages>)
-      : (new SharedWorker(
-          new URL('../workers/shared.worker', import.meta.url),
-          {
-            name: 'Test PWA Shared Worker',
-            type: 'module',
-          }
-        ) as TypedSharedWorker<VisualizationMessages>);
+    const worker = new SharedWorker(
+      new URL('../workers/shared.worker', import.meta.url),
+      {
+        name: 'Test PWA Shared Worker',
+        type: 'module',
+      }
+    ) as TypedSharedWorker<VisualizationMessages>;
 
     worker.port.onmessage = ({ data }) => {
       const name = data.name;
+      console.info(`Received ${name} response from worker`);
       switch (name) {
         case 'register': {
           if (data.response.status === 'OK') {
@@ -75,7 +75,7 @@ export class VisualizationMessengerService implements MessengerService {
       name: 'register',
       payload: {
         view,
-        messages: ['get-list-of-type', 'get-graph'],
+        messages: ['get-graph'],
       },
     });
 
@@ -91,9 +91,5 @@ export class VisualizationMessengerService implements MessengerService {
       name: 'get-graph',
       payload: types,
     });
-  }
-
-  get graph() {
-    return this.#graph.asReadonly();
   }
 }

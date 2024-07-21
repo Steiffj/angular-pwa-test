@@ -11,6 +11,7 @@ import {
   RouterModule,
   RouterOutlet,
 } from '@angular/router';
+import { PokemonListComponent } from 'components/pokemon-list/pokemon-list.component';
 import { CombinedMessengerService } from 'messengers/combined-messenger.service';
 import { TableMessengerService } from 'messengers/table-messenger.service';
 import { VisualizationMessengerService } from 'messengers/visualization-messenger.service';
@@ -22,7 +23,7 @@ import { DataSyncService } from '../../store/data-sync.service';
 @Component({
   selector: 'app-combined',
   standalone: true,
-  imports: [RouterOutlet, RouterModule, GraphComponent],
+  imports: [RouterOutlet, RouterModule, GraphComponent, PokemonListComponent],
   providers: [
     CombinedMessengerService,
     TableMessengerService,
@@ -47,8 +48,8 @@ export class CombinedComponent implements OnInit, OnDestroy {
   ngOnInit() {
     console.log('OnInit lifecycle hook');
     this.messenger.connect();
-    this.loadPokemon();
     this.messenger.visualization.generateGraph([...POKEMON_TYPE]);
+    this.messenger.table.selectedType = 'fairy';
   }
 
   ngOnDestroy() {
