@@ -22,12 +22,16 @@ figure, blockquote, dl, dd {
 ul[role='list'],
 ol[role='list'] {
   list-style: none;
+  padding: 0;
+  margin: 0;
 }
 
 /* Set core body defaults */
 body {
   // min-height: 100vh; // This is fine for most pages that scroll but it causes problems for a fullscreen data visualization app
   line-height: 1.5;
+  margin: 0;
+  padding: 0;
 }
 
 /* Set shorter line heights on headings and interactive elements */
@@ -39,6 +43,8 @@ button, input, label {
 /* Balance text wrapping on headings */
 h1, h2,
 h3, h4 {
+  margin: 0;
+  padding: 0;
   text-wrap: balance;
 }
 

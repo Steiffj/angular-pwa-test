@@ -1,5 +1,17 @@
-.nav-header {
+.nav-banner {
+    background-color: var(--clr-primary);
+    padding-inline: 1rem;
+    padding-block: 0.5rem;
     display: flex;
     flex-direction: row;
-    gap: 1rem;
+    align-items: center;
+    gap: 1em;
+}
+
+.nav-items {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 1em;
+    font-size: 1.25rem;
 }

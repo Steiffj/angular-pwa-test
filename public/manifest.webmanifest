@@ -1,7 +1,7 @@
 {
   "name": "PWA Test App",
   "short_name": "PWA",
-  "theme_color": "#1976D2",
+  "theme_color": "#3A7D44",
   "background_color": "#181D27",
   "display": "standalone",
   "scope": "./",
