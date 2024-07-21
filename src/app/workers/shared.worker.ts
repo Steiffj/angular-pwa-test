@@ -1,10 +1,9 @@
 /// <reference lib="DOM" />
 
-import { openDB } from 'idb';
+import { SharedWorkerMsg } from '../shared-worker/messages';
 import { SharedWorkerOnconnect } from '../worker-types/typed-shared-worker';
 import { SharedWorkerHandler } from './shared-worker-handler';
-import { SharedWorkerMsg } from '../shared-worker/messages';
 
 declare let onconnect: SharedWorkerOnconnect<SharedWorkerMsg>;
-const handler = new SharedWorkerHandler(openDB);
+const handler = new SharedWorkerHandler();
 onconnect = handler.onconnect;
