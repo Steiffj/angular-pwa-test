@@ -5,6 +5,7 @@ import {
   ElementRef,
   HostListener,
   Input,
+  OnDestroy,
   ViewChild,
 } from '@angular/core';
 import { Sigma } from 'sigma';
@@ -20,7 +21,7 @@ import { NodeImageProgram } from '@sigma/node-image';
   styleUrl: './graph.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class GraphComponent implements AfterViewInit {
+export class GraphComponent implements AfterViewInit, OnDestroy {
   sigma?: Sigma;
   #graph: Graph = new Graph();
   @Input() set graph(value: Graph) {
@@ -67,6 +68,10 @@ export class GraphComponent implements AfterViewInit {
       this.renderTarget.nativeElement,
       this.#settings
     );
+  }
+
+  ngOnDestroy() {
+    this.sigma?.kill();
   }
 }
 
