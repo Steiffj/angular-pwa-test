@@ -1,7 +1,10 @@
 /// <reference lib="webworker" />
 
 import { WorkerOnmessage, WorkerPostMessage } from '@worker-types/typed-worker';
-import { DBSchema, openDB } from 'idb';
+import { DBSchema, IDBPDatabase, openDB } from 'idb';
+import { ConfigIDB } from 'idb/config.schema';
+import { PokemonIDB } from 'idb/pokemon.schema';
+import { TypesIDB } from 'idb/types.schema';
 import {
   Subject,
   firstValueFrom,
@@ -12,14 +15,7 @@ import {
 } from 'rxjs';
 import { PokemonType } from '../__typegen/types';
 import { DataSyncMsg } from './messages';
-import type {
-  ConfigIDB,
-  IDB,
-  PokemonIDB,
-  Typ,
-  TypesIDB,
-  Val,
-} from './worker-generics';
+import { Pokemon } from './pokemon';
 
 export type LoadResult<T extends string> = {
   ok: boolean;
@@ -103,7 +99,9 @@ onmessage = async ({ data: msg }) => {
   }
 };
 
-async function deleteExistingObjectStores<T extends DBSchema>(db: IDB<T>) {
+async function deleteExistingObjectStores<T extends DBSchema>(
+  db: IDBPDatabase<T>
+) {
   const result: {
     deleted: string[];
     failed: string[];
@@ -133,7 +131,7 @@ async function init(
   url: string,
   dbPrefix: string,
   dbVersion: number,
-  stores: Typ[]
+  stores: PokemonType[]
 ): Promise<DBInfo> {
   // Create config DB (simple key/value pairs)
   const dbConfig = await openDB<ConfigIDB>(`${dbPrefix}-config`, dbVersion, {
@@ -192,18 +190,18 @@ async function init(
  * @returns
  */
 async function loadByType(
-  db: IDB<TypesIDB>,
+  db: IDBPDatabase<TypesIDB>,
   /**
    * API URL that provides the initial list of types.
    * e.g. https://pokeapi.co/api/v2/type/?limit=100
    */
   url: string,
-  stores: Typ[],
+  stores: PokemonType[],
   throttleTimeMs: number = 15 * 1000
 ) {
   const done$ = new Subject<void>();
 
-  let result: LoadResult<Typ> = {
+  let result: LoadResult<PokemonType> = {
     ok: false,
     stores: [],
     succeeded: [],
@@ -213,7 +211,7 @@ async function loadByType(
   };
 
   // Get list of Pokemon of the specified type
-  const types: { name: Typ; url: string }[] = [];
+  const types: { name: PokemonType; url: string }[] = [];
   try {
     console.log(`Loading types from ${url}`);
     const res = await fetch(url);
@@ -221,7 +219,7 @@ async function loadByType(
       count: number;
       next: unknown;
       previous: unknown;
-      results: { name: Typ; url: string }[];
+      results: { name: PokemonType; url: string }[];
     } = await res.json();
     if (data.count !== stores.length) {
       console.warn(
@@ -285,11 +283,11 @@ async function loadByType(
 
           console.log(`Loading data for type ${type.name} from ${type.url}`);
           const res = await fetch(type.url);
-          const data: { pokemon: { pokemon: Omit<Val, 'id'> }[] } =
+          const data: { pokemon: { pokemon: Omit<Pokemon, 'id'> }[] } =
             await res.json();
           // Messy parsing/ID mapping
           // see https://pokeapi.co/api/v2/type/2/
-          const items: Val[] = data.pokemon
+          const items: Pokemon[] = data.pokemon
             .map((p) => ({
               ...p.pokemon,
               id: +(
@@ -339,7 +337,11 @@ async function loadByType(
  * @param items
  * @returns
  */
-async function loadToIDB(db: IDB<TypesIDB>, type: Typ, items: Val[]) {
+async function loadToIDB(
+  db: IDBPDatabase<TypesIDB>,
+  type: PokemonType,
+  items: Pokemon[]
+) {
   const tx = db.transaction([type, 'metadata'], 'readwrite');
 
   // Update metadata

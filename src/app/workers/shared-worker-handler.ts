@@ -3,6 +3,7 @@
 import Graph from 'graphology';
 import { circular } from 'graphology-layout';
 import { openDB } from 'idb';
+import { TypesIDB } from 'idb/types.schema';
 import { ViewName } from 'views/view-name';
 import { PokemonType } from '../__typegen/types';
 import {
@@ -11,7 +12,6 @@ import {
   SharedWorkerMsgName,
 } from '../shared-worker/messages';
 import { Pokemon } from '../store/pokemon';
-import { IDB, TypesIDB } from '../store/worker-generics';
 import { SharedWorkerOnconnect } from '../worker-types/typed-shared-worker';
 import { Multicaster } from './multicaster';
 
@@ -102,7 +102,7 @@ export class SharedWorkerHandler {
 
 async function getPokemonTypeGraph(types: PokemonType[]) {
   console.log('Creating graph from pokemon types');
-  const idb: IDB<TypesIDB> = await openDB('poke-types', 1);
+  const idb = await openDB<TypesIDB>('poke-types', 1);
   const tx = idb.transaction(types, 'readonly');
   const graph = new Graph();
   for (const type of types) {
