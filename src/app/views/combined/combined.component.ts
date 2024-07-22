@@ -47,6 +47,7 @@ export class CombinedComponent implements OnInit, OnDestroy {
 
   ngOnInit() {
     console.log('OnInit lifecycle hook');
+    this.loadPokemon();
     this.messenger.connect();
     this.messenger.visualization.generateGraph([...POKEMON_TYPE]);
     this.messenger.table.selectedType = 'fairy';

@@ -1,10 +1,13 @@
 /// <reference lib="webworker" />
 
 import { WorkerOnmessage, WorkerPostMessage } from '@worker-types/typed-worker';
-import { DBSchema, IDBPDatabase, openDB } from 'idb';
+import { IDBPDatabase, openDB } from 'idb';
 import { ConfigIDB } from 'idb/config.schema';
+import { getUpgradeConfig } from 'idb/config.upgrade';
 import { PokemonIDB } from 'idb/pokemon.schema';
+import { getUpgradePokemon } from 'idb/pokemon.upgrade';
 import { TypesIDB } from 'idb/types.schema';
+import { deleteExistingObjectStores } from 'idb/utils/delete-object-stores';
 import {
   Subject,
   firstValueFrom,
@@ -99,34 +102,6 @@ onmessage = async ({ data: msg }) => {
   }
 };
 
-async function deleteExistingObjectStores<T extends DBSchema>(
-  db: IDBPDatabase<T>
-) {
-  const result: {
-    deleted: string[];
-    failed: string[];
-  } = {
-    deleted: [],
-    failed: [],
-  };
-
-  console.debug(
-    `Deleting ${db.objectStoreNames.length} old object stores from ${db.name}`
-  );
-  for (const store of db.objectStoreNames) {
-    try {
-      db.deleteObjectStore(store);
-      result.deleted.push(store as string);
-      console.debug(`Deleted object store ${db.name}.${store}`);
-    } catch {
-      console.error(`Failed to delete object store ${db.name}.${store}`);
-      result.failed.push(store as string);
-    }
-  }
-
-  return result;
-}
-
 async function init(
   url: string,
   dbPrefix: string,
@@ -135,16 +110,12 @@ async function init(
 ): Promise<DBInfo> {
   // Create config DB (simple key/value pairs)
   const dbConfig = await openDB<ConfigIDB>(`${dbPrefix}-config`, dbVersion, {
-    async upgrade(db) {
-      deleteExistingObjectStores(db);
-      const store = db.createObjectStore('config');
-      await store.put(url, 'apiUrl');
-    },
-    async blocked(currentVersion, blockedVersion, event) {},
+    upgrade: getUpgradeConfig(url),
   });
 
   // Create DB w/ Pokemon grouped by type
   const dbTypes = await openDB<TypesIDB>(`${dbPrefix}-types`, dbVersion, {
+    // upgrade: getUpgradeTypes(stores),
     async upgrade(db, oldVersion, newVersion, tx) {
       console.log(`Upgrading ${db.name} from v${oldVersion} to v${newVersion}`);
       deleteExistingObjectStores(db);
@@ -160,16 +131,11 @@ async function init(
         }
       }
     },
-    async blocked(currentVersion, blockedVersion, event) {},
   });
 
   // Create DB w/ all Pokemon details in one object store.
   const dbPokemon = await openDB<PokemonIDB>(`${dbPrefix}-pokemon`, dbVersion, {
-    async upgrade(db, oldVersion, newVersion, tx) {
-      deleteExistingObjectStores(db);
-      db.createObjectStore('pokemon');
-    },
-    async blocked(currentVersion, blockedVersion, event) {},
+    upgrade: getUpgradePokemon(),
   });
 
   return {
