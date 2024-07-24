@@ -1,9 +1,12 @@
-import { PokemonType } from '__typegen/types';
 import { OpenDBCallbacks } from 'idb';
+import { fetchPokemonTypes } from 'store/fetch-pokemon-types';
 import { TypesIDB } from './types.schema';
 import { deleteExistingObjectStores } from './utils/delete-object-stores';
+import { WorkerEnvironment } from './utils/open-idb';
 
-export function getUpgradeTypes(stores: PokemonType[]) {
+export async function getUpgradeTypes(env: WorkerEnvironment) {
+  const stores = await fetchPokemonTypes(env.apiUrl);
+
   const upgradeTypes: OpenDBCallbacks<TypesIDB>['upgrade'] = async (
     db,
     oldVersion,
@@ -11,18 +14,15 @@ export function getUpgradeTypes(stores: PokemonType[]) {
     tx
   ) => {
     console.log(`Upgrading ${db.name} from v${oldVersion} to v${newVersion}`);
-    await deleteExistingObjectStores(db);
+    deleteExistingObjectStores(db);
 
     db.createObjectStore('metadata');
 
     console.debug(`Creating ${stores.length} type object stores.`);
     for (const store of stores) {
-      try {
-        db.createObjectStore(store);
-      } catch {
-        console.error(`Failed to create object store ${store}`);
-      }
+      db.createObjectStore(store.name);
     }
+
     await tx.done;
   };
 

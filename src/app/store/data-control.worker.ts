@@ -110,7 +110,7 @@ async function init(
 ): Promise<DBInfo> {
   // Create config DB (simple key/value pairs)
   const dbConfig = await openDB<ConfigIDB>(`${dbPrefix}-config`, dbVersion, {
-    upgrade: getUpgradeConfig(url),
+    upgrade: getUpgradeConfig({ apiUrl: url }),
   });
 
   // Create DB w/ Pokemon grouped by type

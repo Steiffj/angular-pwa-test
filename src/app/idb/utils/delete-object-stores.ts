@@ -1,6 +1,6 @@
 import { DBSchema, IDBPDatabase } from 'idb';
 
-export async function deleteExistingObjectStores<T extends DBSchema>(
+export function deleteExistingObjectStores<T extends DBSchema>(
   db: IDBPDatabase<T>
 ) {
   const result: {
