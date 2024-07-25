@@ -1,13 +1,11 @@
 /// <reference lib="webworker" />
 
 import { WorkerOnmessage, WorkerPostMessage } from '@worker-types/typed-worker';
-import { IDBPDatabase, openDB } from 'idb';
+import { IDBPDatabase } from 'idb';
 import { ConfigIDB } from 'idb/config.schema';
-import { getUpgradeConfig } from 'idb/config.upgrade';
 import { PokemonIDB } from 'idb/pokemon.schema';
-import { getUpgradePokemon } from 'idb/pokemon.upgrade';
 import { TypesIDB } from 'idb/types.schema';
-import { deleteExistingObjectStores } from 'idb/utils/delete-object-stores';
+import { WorkerEnvironment, openIDB } from 'idb/utils/open-idb';
 import {
   Subject,
   firstValueFrom,
@@ -36,6 +34,8 @@ export type DBInfo = {
 };
 
 let dbInfo: DBInfo;
+let env: WorkerEnvironment;
+const IDB_MODE = 'disk';
 
 declare let onmessage: WorkerOnmessage<DataSyncMsg<PokemonType>>;
 declare const postMessage: WorkerPostMessage<DataSyncMsg<PokemonType>>;
@@ -44,12 +44,19 @@ onmessage = async ({ data: msg }) => {
     switch (msg.name) {
       case 'init':
         try {
+          env = {
+            apiUrl: msg.payload.apiUrl,
+            mode: IDB_MODE,
+          };
+
+          console.log('Initializing DB info.');
           dbInfo = await init(
             msg.payload.apiUrl,
             msg.payload.dbName,
             msg.payload.dbVersion,
             msg.payload.types
           );
+          console.log('Successfully initialized DB info.');
           postMessage({
             name: msg.name,
             response: {
@@ -74,10 +81,17 @@ onmessage = async ({ data: msg }) => {
         } else {
           console.log('Starting load by type');
         }
-        const db = await openDB<TypesIDB>(
+        const { status, db, error } = await openIDB<TypesIDB>(
           dbInfo.types.name,
-          dbInfo.types.version
+          dbInfo.types.version,
+          env
         );
+
+        if (status !== 'ok') {
+          console.error(error);
+          return;
+        }
+
         const info = await loadByType(
           db,
           msg.payload.url,
@@ -109,39 +123,49 @@ async function init(
   stores: PokemonType[]
 ): Promise<DBInfo> {
   // Create config DB (simple key/value pairs)
-  const dbConfig = await openDB<ConfigIDB>(`${dbPrefix}-config`, dbVersion, {
-    upgrade: getUpgradeConfig({ apiUrl: url }),
+  const dbConfig = await openIDB<ConfigIDB>(`${dbPrefix}-config`, dbVersion, {
+    apiUrl: url,
+    mode: IDB_MODE,
   });
+
+  if (dbConfig.status !== 'ok') {
+    throw new AggregateError(
+      [dbConfig.error],
+      'Failed to initialize IndexedDB DB.'
+    );
+  }
 
   // Create DB w/ Pokemon grouped by type
-  const dbTypes = await openDB<TypesIDB>(`${dbPrefix}-types`, dbVersion, {
-    // upgrade: getUpgradeTypes(stores),
-    async upgrade(db, oldVersion, newVersion, tx) {
-      console.log(`Upgrading ${db.name} from v${oldVersion} to v${newVersion}`);
-      deleteExistingObjectStores(db);
-
-      db.createObjectStore('metadata');
-
-      console.debug(`Creating ${stores.length} type object stores.`);
-      for (const store of stores) {
-        try {
-          db.createObjectStore(store);
-        } catch {
-          console.error(`Failed to create object store ${store}`);
-        }
-      }
-    },
+  const dbTypes = await openIDB<TypesIDB>(`${dbPrefix}-types`, dbVersion, {
+    apiUrl: url,
+    mode: IDB_MODE,
   });
+
+  if (dbTypes.status !== 'ok') {
+    throw new AggregateError(
+      [dbTypes.error],
+      'Failed to initialize IndexedDB DB.'
+    );
+  }
 
   // Create DB w/ all Pokemon details in one object store.
-  const dbPokemon = await openDB<PokemonIDB>(`${dbPrefix}-pokemon`, dbVersion, {
-    upgrade: getUpgradePokemon(),
-  });
+  const dbPokemon = await openIDB<PokemonIDB>(
+    `${dbPrefix}-pokemon`,
+    dbVersion,
+    { apiUrl: url, mode: IDB_MODE }
+  );
+
+  if (dbPokemon.status !== 'ok') {
+    throw new AggregateError(
+      [dbPokemon.error],
+      'Failed to initialize IndexedDB DB.'
+    );
+  }
 
   return {
-    config: { name: dbConfig.name, version: dbConfig.version },
-    types: { name: dbTypes.name, version: dbTypes.version },
-    pokemon: { name: dbPokemon.name, version: dbPokemon.version },
+    config: { name: dbConfig.db.name, version: dbConfig.db.version },
+    types: { name: dbTypes.db.name, version: dbTypes.db.version },
+    pokemon: { name: dbPokemon.db.name, version: dbPokemon.db.version },
   };
 }
 

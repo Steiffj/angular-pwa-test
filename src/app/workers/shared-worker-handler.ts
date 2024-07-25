@@ -2,8 +2,8 @@
 
 import Graph from 'graphology';
 import { circular } from 'graphology-layout';
-import { openDB } from 'idb';
 import { TypesIDB } from 'idb/types.schema';
+import { WorkerEnvironment, openIDB } from 'idb/utils/open-idb';
 import { ViewName } from 'views/view-name';
 import { PokemonType } from '../__typegen/types';
 import {
@@ -25,7 +25,7 @@ export class SharedWorkerHandler {
 
   #graph: Graph = new Graph();
 
-  constructor() {}
+  constructor(public env: WorkerEnvironment) {}
 
   readonly onconnect: SharedWorkerOnconnect<SharedWorkerMsg> = (e) => {
     const port = e.ports[0];
@@ -62,7 +62,7 @@ export class SharedWorkerHandler {
           break;
         }
         case 'get-list-of-type': {
-          postSelectedList(data.payload, this.multicaster);
+          postSelectedList(data.payload, this.multicaster, this.env);
           break;
         }
         case 'misc': {
@@ -78,7 +78,7 @@ export class SharedWorkerHandler {
           break;
         }
         case 'get-graph': {
-          this.#graph = await getPokemonTypeGraph(data.payload);
+          this.#graph = await getPokemonTypeGraph(data.payload, this.env);
           const serialized = this.#graph.export();
           for (const rx of this.multicaster.getPorts(name)) {
             rx.postMessage({
@@ -100,10 +100,18 @@ export class SharedWorkerHandler {
   };
 }
 
-async function getPokemonTypeGraph(types: PokemonType[]) {
+async function getPokemonTypeGraph(
+  types: PokemonType[],
+  env: WorkerEnvironment
+) {
   console.log('Creating graph from pokemon types');
-  const idb = await openDB<TypesIDB>('poke-types', 1);
-  const tx = idb.transaction(types, 'readonly');
+  const { status, db } = await openIDB<TypesIDB>('poke-types', 1, env);
+
+  if (status !== 'ok') {
+    return new Graph();
+  }
+
+  const tx = db.transaction(types, 'readonly');
   const graph = new Graph();
   for (const type of types) {
     graph.addNode(type, {
@@ -127,12 +135,16 @@ async function getPokemonTypeGraph(types: PokemonType[]) {
   return graph;
 }
 
-async function getListOfType(type: PokemonType) {
+async function getListOfType(type: PokemonType, env: WorkerEnvironment) {
   console.log(`Reading ${type} pokemon from IDB`);
   const list: Pokemon[] = [];
-  const idb = await openDB<TypesIDB>('poke-types', 1);
-  const tx = idb.transaction(type, 'readonly');
+  const { status, db } = await openIDB<TypesIDB>('poke-types', 1, env);
 
+  if (status !== 'ok') {
+    return [];
+  }
+
+  const tx = db.transaction(type, 'readonly');
   for await (const cursor of tx.store.iterate()) {
     list.push(cursor.value);
   }
@@ -144,9 +156,10 @@ async function getListOfType(type: PokemonType) {
 
 async function postSelectedList(
   type: PokemonType,
-  multicaster: Multicaster<SharedWorkerMsgName, GetListOfTypeMsg>
+  multicaster: Multicaster<SharedWorkerMsgName, GetListOfTypeMsg>,
+  env: WorkerEnvironment
 ) {
-  const res = await getListOfType(type);
+  const res = await getListOfType(type, env);
   for (const rx of multicaster.getPorts('get-list-of-type')) {
     rx.postMessage({
       name: 'get-list-of-type',

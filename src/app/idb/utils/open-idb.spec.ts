@@ -1,15 +1,14 @@
-import { TypesIDB } from 'idb/types.schema';
-import { WorkerEnvironment, openIDB } from './open-idb';
 import { POKEMON_TYPE } from '__typegen/types';
 import { ConfigIDB } from 'idb/config.schema';
 import { PokemonIDB } from 'idb/pokemon.schema';
-import { DBSchema } from 'idb';
+import { TypesIDB } from 'idb/types.schema';
+import { WorkerEnvironment, openIDB } from './open-idb';
 
 fdescribe('openIDB', () => {
-  const mode = 'ram';
   const version = 1;
   const env: WorkerEnvironment = {
     apiUrl: 'https://test.url',
+    mode: 'ram',
   };
 
   for (const name of ['poke-types', 'types', 'test-types-test']) {
@@ -24,12 +23,7 @@ fdescribe('openIDB', () => {
       );
       spyOn(globalThis, 'fetch').and.resolveTo(typesRes);
 
-      const { status, db, error } = await openIDB<TypesIDB>(
-        name,
-        version,
-        mode,
-        env
-      );
+      const { status, db, error } = await openIDB<TypesIDB>(name, version, env);
 
       if (status !== 'ok') {
         fail(`Test connection unexpectedly failed. Error: ` + error);
@@ -47,7 +41,6 @@ fdescribe('openIDB', () => {
       const { status, db, error } = await openIDB<ConfigIDB>(
         name,
         version,
-        mode,
         env
       );
 
@@ -67,7 +60,6 @@ fdescribe('openIDB', () => {
       const { status, db, error } = await openIDB<PokemonIDB>(
         name,
         version,
-        mode,
         env
       );
 
@@ -84,7 +76,6 @@ fdescribe('openIDB', () => {
     const { status, db } = await openIDB<PokemonIDB>(
       'unsupported-name',
       version,
-      mode,
       env
     );
 
@@ -98,7 +89,6 @@ fdescribe('openIDB', () => {
     const { status, db, error } = await openIDB<ConfigIDB>(
       'unsupported-name',
       version,
-      mode,
       env,
       {
         upgrade: async (db, oldVersion, newVersion, tx) => {

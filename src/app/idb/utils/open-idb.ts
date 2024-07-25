@@ -4,12 +4,11 @@ import { getUpgradeConfig } from 'idb/config.upgrade';
 import { getUpgradePokemon } from 'idb/pokemon.upgrade';
 import { getUpgradeTypes } from 'idb/types.upgrade';
 
-export type WorkerEnvironment = { apiUrl: string };
+export type WorkerEnvironment = { apiUrl: string; mode: 'disk' | 'ram' };
 
 export async function openIDB<T extends DBSchema>(
   name: string,
   version: number,
-  mode: 'disk' | 'ram',
   env: WorkerEnvironment,
   callbacks?: OpenDBCallbacks<T>
 ): Promise<
@@ -35,7 +34,7 @@ export async function openIDB<T extends DBSchema>(
       error?: Error;
     }
 > {
-  IdbGlobalSettings.mode = mode;
+  IdbGlobalSettings.mode = env.mode;
   if (!IdbGlobalSettings.ok) {
     return {
       status: 'idb-mode-error',
